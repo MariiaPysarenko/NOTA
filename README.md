@@ -1,60 +1,16 @@
-# NOTA
+# React + Vite
 
-AI-powered music practice coach with real-time pitch feedback and gamified learning.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
----
+Currently, two official plugins are available:
 
-## Overview
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-NOTA is a mobile-first AI-assisted platform designed to help students learn musical instruments more effectively through immersive practice sessions and instant visual feedback.
+## React Compiler
 
-## Problem
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-Traditional music practice often lacks:
-- real-time feedback
-- motivation
-- engagement
-- progress visibility
+## Expanding the ESLint configuration
 
-Students practicing alone frequently do not know whether they are playing correctly.
-
-## Solution
-
-NOTA transforms practice into an interactive experience by combining:
-- 🎵 Sheet music synchronization
-- 🎯 Real-time pitch feedback
-- 🔥 Gamified progress tracking
-
-## Features
-
-- Live pitch visualization
-- Sharp / flat / in-tune feedback
-- Score & streak system
-- Playback controls
-- Practice session tracking
-- Mobile-first immersive interface
-
-## Design Direction
-
-- Dark cinematic UI
-- Neon green accents
-- Stage-inspired atmosphere
-- Clean and focused experience
-
-## Tech Stack
-
-- React
-- Vite
-- Tailwind CSS
-- Framer Motion
-
-## Team
-
-- Mariia Pysarenko — Technical Lead & UI/UX Designer
-- Afonso Clemêncio — Marketing & Brand Strategy
-- Kārlis Vagals — Business Development
-- Ash — Business Strategy & Research
-
----
-
-Built during the Erasmus+ BIP “Digital Innovation Through AI”.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
