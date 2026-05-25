@@ -55,6 +55,15 @@ button {
 .logo {
   font-size: 21px;
   letter-spacing: -1px;
+  border: 0;
+  background: transparent;
+  color: white;
+  padding: 0;
+}
+
+.back.hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .logo span {
@@ -135,7 +144,7 @@ button {
 .instrument-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .instrument-image.big {
@@ -253,11 +262,31 @@ button {
   border-radius: 18px;
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 0 18px;
   color: #8f8f8f;
   background: rgba(255, 255, 255, 0.055);
   border: 1px solid rgba(255, 255, 255, 0.08);
   margin: 18px 0;
+}
+
+.search input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 15px;
+  outline: none;
+}
+
+.search input::placeholder {
+  color: #8f8f8f;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding: 24px 8px;
 }
 
 .chips {
@@ -453,7 +482,19 @@ button {
   line-height: 1.35;
 }
 
-.feature-card button {
+.clickable-card {
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.clickable-card:active {
+  transform: scale(0.98);
+}
+
+.card-action {
   position: absolute;
   right: 18px;
   bottom: 18px;
@@ -465,6 +506,9 @@ button {
   background: rgba(255, 122, 0, 0.08);
   color: #ff7a00;
   font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .feature-wave {
@@ -535,14 +579,182 @@ button {
   line-height: 1.3;
 }
 
-.trend-card button {
-  border: 0;
+.trend-card.clickable-card {
+  width: 100%;
+}
+
+.pill-btn {
+  display: inline-block;
   border-radius: 9px;
   padding: 10px 14px;
   background: linear-gradient(90deg, #ff5a00, #ff9700);
   color: white;
   font-weight: 700;
   font-size: 12px;
+}
+
+.inline-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #ff7a00;
+  text-decoration: underline;
+  font-size: inherit;
+}
+
+.toast {
+  position: absolute;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid rgba(255, 122, 0, 0.45);
+  color: #fff;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.sub-title {
+  margin: 0 0 18px;
+  font-size: 26px;
+  letter-spacing: -0.8px;
+}
+
+.sub-title span {
+  color: #ff7a00;
+}
+
+.session-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.session-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.055);
+  color: white;
+  text-align: left;
+}
+
+.session-item.static {
+  cursor: default;
+}
+
+.session-item h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.session-item p {
+  margin: 4px 0 0;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.session-item b {
+  color: #ff7a00;
+  font-size: 18px;
+}
+
+.progress-card {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16px;
+}
+
+.progress-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 120px;
+  margin: 16px 0 10px;
+}
+
+.progress-bars span {
+  flex: 1;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, #ff9700, #ff5a00);
+  min-height: 8px;
+}
+
+.progress-note {
+  margin: 0;
+  color: #aaa;
+  font-size: 13px;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 14px;
+}
+
+.profile-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  flex-shrink: 0;
+}
+
+.profile-card h3 {
+  margin: 0;
+}
+
+.profile-card p {
+  margin: 4px 0 0;
+  color: #ff8a00;
+}
+
+.sub-screen .secondary {
+  margin-bottom: 10px;
+}
+
+.trend-list {
+  display: grid;
+  gap: 10px;
+}
+
+.trend-item {
+  text-align: left;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 122, 0, 0.25);
+  background: rgba(255, 122, 0, 0.08);
+  color: white;
+}
+
+.trend-tag {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 122, 0, 0.2);
+  color: #ff9b35;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.trend-item h4 {
+  margin: 0;
+  font-size: 17px;
 }
 
 .vinyl {
@@ -647,8 +859,56 @@ button {
   gap: 8px;
 }
 
-.sax-icon {
-  font-size: 26px;
+.piece-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.active-live {
+  animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.playhead.playing {
+  animation: scroll-playhead 3s linear infinite;
+}
+
+@keyframes scroll-playhead {
+  0% {
+    left: 20%;
+  }
+  100% {
+    left: 80%;
+  }
+}
+
+.mic-btn.recording {
+  box-shadow: 0 0 50px rgba(255, 60, 0, 0.9);
+  border-color: #ff3f24;
+}
+
+.active-control {
+  outline: 2px solid #ff7a00;
+}
+
+.waveform div.wave-active {
+  animation: wave-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes wave-pulse {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .piece-row p,
@@ -942,4 +1202,308 @@ button {
   color: white;
   background: rgba(255, 255, 255, 0.06);
   font-size: 9px;
+}
+
+/* —— MVP: upload, live pitch, summary —— */
+
+.upload-card {
+  border-radius: 20px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 122, 0, 0.25);
+}
+
+.upload-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.upload-title span {
+  color: #ff7a00;
+}
+
+.upload-hint {
+  margin: 0 0 10px;
+  font-size: 10px;
+  color: #aaa;
+}
+
+.upload-input-hidden {
+  display: none;
+}
+
+.upload-btn {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 122, 0, 0.6);
+  background: rgba(255, 122, 0, 0.1);
+  color: #ff9b35;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.upload-status {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 122, 0, 0.12);
+  color: #ffc285;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.upload-status-icon {
+  color: #ff7a00;
+  margin-right: 6px;
+}
+
+.sheet-preview-wrap {
+  margin-top: 12px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0a0a0a;
+}
+
+.sheet-preview {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  display: block;
+}
+
+.sheet-preview-label {
+  display: block;
+  padding: 6px 10px;
+  font-size: 9px;
+  color: #888;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.exercise-notes-card {
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 10px;
+}
+
+.exercise-label {
+  margin: 0 0 8px;
+  font-size: 9px;
+  text-transform: uppercase;
+  color: #888;
+  letter-spacing: 0.5px;
+}
+
+.exercise-note-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.note-chip {
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccc;
+}
+
+.note-chip.active {
+  background: rgba(255, 122, 0, 0.25);
+  border-color: #ff7a00;
+  color: #ff9b35;
+  box-shadow: 0 0 16px rgba(255, 122, 0, 0.35);
+}
+
+.sheet-music-mini {
+  height: 72px;
+  margin-bottom: 12px;
+}
+
+.sheet-music-mini .staff {
+  height: 56px;
+  margin-bottom: 0;
+}
+
+.sheet-music-mini .playhead {
+  height: 68px;
+}
+
+.dual-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.detected-note,
+.target-note {
+  text-align: center;
+}
+
+.detected-note h1,
+.target-note h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 600;
+  transition: color 0.15s ease, text-shadow 0.15s ease;
+}
+
+.detected-note p,
+.target-note p {
+  margin: 4px 0 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.detected-note p {
+  color: #aaa;
+}
+
+.note-green {
+  color: #69d318;
+  text-shadow: 0 0 24px rgba(105, 211, 24, 0.5);
+}
+
+.note-orange {
+  color: #ff9f16;
+  text-shadow: 0 0 24px rgba(255, 159, 22, 0.45);
+}
+
+.note-red {
+  color: #ff3f24;
+  text-shadow: 0 0 24px rgba(255, 63, 36, 0.45);
+}
+
+.note-gray {
+  color: #666;
+}
+
+.orange-label {
+  color: #ff9f16;
+  font-weight: 700;
+}
+
+.gray-label {
+  color: #888;
+  font-weight: 700;
+}
+
+.pitch-feedback-green {
+  box-shadow: inset 0 0 40px rgba(105, 211, 24, 0.08);
+}
+
+.pitch-feedback-orange {
+  box-shadow: inset 0 0 40px rgba(255, 159, 22, 0.1);
+}
+
+.pitch-feedback-red {
+  box-shadow: inset 0 0 40px rgba(255, 63, 36, 0.1);
+}
+
+.pitch-feedback-gray {
+  box-shadow: none;
+}
+
+.start-practice-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(90deg, #ff5a00, #ff9700);
+  box-shadow: 0 8px 28px rgba(255, 122, 0, 0.45);
+}
+
+.start-practice-btn.stop {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 63, 36, 0.5);
+  box-shadow: none;
+}
+
+.summary-card {
+  border-radius: 22px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 0, 0.15), transparent 50%),
+    rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 122, 0, 0.3);
+}
+
+.summary-card h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.summary-card h3 span {
+  color: #ff7a00;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.summary-stat {
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.summary-stat.highlight b {
+  color: #69d318;
+  font-size: 20px;
+}
+
+.summary-stat b {
+  display: block;
+  color: #ff7a00;
+  font-size: 15px;
+}
+
+.summary-stat span {
+  font-size: 8px;
+  color: #aaa;
+  text-transform: uppercase;
+}
+
+.summary-detail {
+  margin: 0 0 6px;
+  font-size: 11px;
+  color: #ccc;
+  line-height: 1.4;
+}
+
+.summary-detail strong {
+  color: #ff9b35;
+}
+
+.summary-motivation {
+  margin: 12px 0;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 122, 0, 0.12);
+  color: #ffe0c2;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.summary-retry {
+  width: 100%;
 }
