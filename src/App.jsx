@@ -7,12 +7,26 @@ import ReviewEditScreen from "./screens/ReviewEditScreen";
 import TrackChoiceScreen from "./screens/TrackChoiceScreen";
 import TrackLibraryScreen from "./screens/TrackLibraryScreen";
 import UploadDigitizeScreen from "./screens/UploadDigitizeScreen";
+import AuthScreen from "./screens/AuthScreen";
+import ResultAnalysisScreen from "./screens/ResultAnalysisScreen";
+import ProgressScreen from "./screens/ProgressScreen";
+import ProfileScreen from "./screens/ProfileScreen";
+import SheetEditorScreen from "./screens/SheetEditorScreen";
 import "./App.css";
 
 function AppRouter() {
-  const { route } = useApp();
+  const { route, user } = useApp();
+
+  if (!user) {
+    if (route === ROUTES.AUTH_REGISTER) return <AuthScreen mode="register" />;
+    return <AuthScreen mode="login" />;
+  }
 
   switch (route) {
+    case ROUTES.AUTH_LOGIN:
+      return <AuthScreen mode="login" />;
+    case ROUTES.AUTH_REGISTER:
+      return <AuthScreen mode="register" />;
     case ROUTES.INSTRUMENT:
       return <InstrumentSelectionScreen />;
     case ROUTES.TRACK_CHOICE:
@@ -25,8 +39,16 @@ function AppRouter() {
       return <ReviewEditScreen />;
     case ROUTES.PRACTICE:
       return <PracticeScreen />;
+    case ROUTES.SHEET_EDITOR:
+      return <SheetEditorScreen />;
+    case ROUTES.RESULT:
+      return <ResultAnalysisScreen />;
+    case ROUTES.PROGRESS:
+      return <ProgressScreen />;
+    case ROUTES.PROFILE:
+      return <ProfileScreen />;
     default:
-      return <InstrumentSelectionScreen />;
+      return <PracticeScreen />;
   }
 }
 

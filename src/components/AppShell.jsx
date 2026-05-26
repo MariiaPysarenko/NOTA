@@ -1,12 +1,13 @@
 import { BACK_ROUTE, ROUTES } from "../navigation/routes";
 import { useApp } from "../context/AppContext";
+import BottomNav from "./BottomNav";
 
 export default function AppShell({ children }) {
-  const { route, navigate, toast } = useApp();
+  const { route, navigate, toast, user, isDemoMode } = useApp();
   const backRoute = BACK_ROUTE[route];
   const canGoBack = Boolean(backRoute);
 
-  const goHome = () => navigate(ROUTES.INSTRUMENT);
+  const goHome = () => navigate(user ? ROUTES.PRACTICE : ROUTES.AUTH_LOGIN);
   const goBack = () => {
     if (backRoute) navigate(backRoute);
   };
@@ -35,7 +36,9 @@ export default function AppShell({ children }) {
           </button>
         </header>
 
-        {children}
+        {isDemoMode && user && <p className="demo-badge">Demo Mode</p>}
+        <div className="screen-transition">{children}</div>
+        <BottomNav />
       </div>
     </div>
   );

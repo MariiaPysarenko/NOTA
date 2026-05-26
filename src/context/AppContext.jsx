@@ -3,11 +3,22 @@ import { instruments } from "../instruments";
 import { ROUTES } from "../navigation/routes";
 import { notesToExercise, reindexNoteIds } from "../utils/noteModel";
 import { DEMO_EXERCISE } from "../utils/exercise";
+import { enrichNotesWithConcertPitch } from "../utils/transposition";
+import { getInitialAuthState } from "../services/authService";
+import {
+  getLocalAnnotations,
+  getLocalSessions,
+  setLocalAnnotations,
+  setLocalSessions,
+} from "../services/localStore";
+import { isDemoMode } from "../services/supabaseClient";
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  const [route, setRoute] = useState(ROUTES.INSTRUMENT);
+  const initialUser = getInitialAuthState();
+  const [user, setUser] = useState(initialUser);
+  const [route, setRoute] = useState(initialUser ? ROUTES.INSTRUMENT : ROUTES.AUTH_LOGIN);
   const [selectedInstrument, setSelectedInstrument] = useState(instruments[0]);
   const [pieceMeta, setPieceMeta] = useState({
     id: "demo",
@@ -15,7 +26,11 @@ export function AppProvider({ children }) {
     subtitle: "",
   });
   const [digitizedNotes, setDigitizedNotes] = useState([]);
+  const [activeTab, setActiveTab] = useState("practice");
   const [uploadPreview, setUploadPreview] = useState(null);
+  const [practiceSummary, setPracticeSummary] = useState(null);
+  const [practiceSessions, setPracticeSessionsState] = useState(getLocalSessions());
+  const [annotationsBySheet, setAnnotationsBySheetState] = useState(getLocalAnnotations());
   const [toast, setToast] = useState("");
 
   const showToast = useCallback((message) => {
@@ -27,7 +42,8 @@ export function AppProvider({ children }) {
   const navigate = useCallback((nextRoute) => setRoute(nextRoute), []);
 
   const setNotes = useCallback((notes, meta = {}) => {
-    const indexed = reindexNoteIds(notes);
+    const withConcert = enrichNotesWithConcertPitch(notes, selectedInstrument.name);
+    const indexed = reindexNoteIds(withConcert);
     setDigitizedNotes(indexed);
     if (meta.title) {
       setPieceMeta((m) => ({
@@ -37,6 +53,22 @@ export function AppProvider({ children }) {
         subtitle: meta.subtitle ?? m.subtitle,
       }));
     }
+  }, [selectedInstrument.name]);
+
+  const setPracticeSessions = useCallback((updater) => {
+    setPracticeSessionsState((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      if (isDemoMode) setLocalSessions(next);
+      return next;
+    });
+  }, []);
+
+  const setAnnotationsForSheet = useCallback((sheetId, annotations) => {
+    setAnnotationsBySheetState((prev) => {
+      const next = { ...prev, [sheetId]: annotations };
+      if (isDemoMode) setLocalAnnotations(next);
+      return next;
+    });
   }, []);
 
   const exercise = useMemo(() => {
@@ -48,29 +80,47 @@ export function AppProvider({ children }) {
 
   const value = useMemo(
     () => ({
+      user,
+      setUser,
       route,
       navigate,
       selectedInstrument,
       setSelectedInstrument,
       digitizedNotes,
       setDigitizedNotes: setNotes,
+      activeTab,
+      setActiveTab,
       uploadPreview,
       setUploadPreview,
       pieceMeta,
       setPieceMeta,
       exercise,
+      practiceSummary,
+      setPracticeSummary,
+      practiceSessions,
+      setPracticeSessions,
+      annotationsBySheet,
+      setAnnotationsForSheet,
       toast,
       showToast,
+      isDemoMode,
     }),
     [
+      user,
       route,
       navigate,
       selectedInstrument,
       digitizedNotes,
       setNotes,
+      activeTab,
       uploadPreview,
       pieceMeta,
       exercise,
+      practiceSummary,
+      practiceSessions,
+      setPracticeSessions,
+      annotationsBySheet,
+      setAnnotationsForSheet,
       toast,
       showToast,
     ]

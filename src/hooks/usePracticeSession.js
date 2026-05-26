@@ -20,6 +20,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [summary, setSummary] = useState(null);
   const [currentTarget, setCurrentTarget] = useState(null);
+  const [currentConcertTarget, setCurrentConcertTarget] = useState(null);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
   const [liveFeedback, setLiveFeedback] = useState("ready");
 
@@ -40,9 +41,11 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     const now = Date.now() - startTimeRef.current;
     const idx = getExpectedNoteIndex(exercise, now);
     const expected = getExpectedNote(exercise, now);
-    const targetNote = expected.name;
-    pitch.setTargetNote(targetNote);
+    const targetNote = expected.writtenName || expected.name;
+    const targetConcert = expected.concertName || expected.name;
+    pitch.setTargetNote(targetConcert);
     setCurrentTarget(targetNote);
+    setCurrentConcertTarget(targetConcert);
     setCurrentNoteIndex(idx);
 
     const detected = pitch.detectedNote;
@@ -87,9 +90,9 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     } else {
       pauseStartRef.current = null;
       if (timingOff) setLiveFeedback("rhythm");
-      else if (detected === targetNote && Math.abs(noteCents ?? 99) <= 35)
+      else if (detected === targetConcert && Math.abs(noteCents ?? 99) <= 35)
         setLiveFeedback("correct");
-      else if (detected && detected !== targetNote) setLiveFeedback("wrong");
+      else if (detected && detected !== targetConcert) setLiveFeedback("wrong");
       else if (detected) setLiveFeedback("rhythm");
       else setLiveFeedback("silent");
     }
@@ -97,7 +100,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     samplesRef.current.push({
       elapsedMs: now,
       detectedNote: detected,
-      targetNote,
+      targetNote: targetConcert,
       cents: noteCents,
       isSilent,
       unstable,
@@ -145,6 +148,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     setElapsedMs(0);
     setSummary(null);
     setCurrentTarget(null);
+    setCurrentConcertTarget(null);
     setCurrentNoteIndex(-1);
     setLiveFeedback("ready");
     samplesRef.current = [];
@@ -173,6 +177,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     progress,
     barProgress,
     currentTarget,
+    currentConcertTarget,
     currentNoteIndex,
     liveFeedback,
     summary,

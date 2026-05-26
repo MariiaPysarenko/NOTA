@@ -130,6 +130,16 @@ export default function ReviewEditScreen() {
                 }
               />
             </label>
+            <label>
+              Beat
+              <input
+                type="number"
+                min={1}
+                max={4}
+                value={selected.beat ?? 1}
+                onChange={(e) => updateSelected({ beat: parseInt(e.target.value, 10) || 1 })}
+              />
+            </label>
 
             <label>
               Annotation / marking

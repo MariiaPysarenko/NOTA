@@ -3,7 +3,7 @@ import { LIBRARY_TRACKS } from "../data/libraryTracks";
 import { ROUTES } from "../navigation/routes";
 
 export default function TrackLibraryScreen() {
-  const { setDigitizedNotes, setPieceMeta, navigate, showToast } = useApp();
+  const { setDigitizedNotes, navigate, showToast, setActiveTab } = useApp();
 
   const selectTrack = (track) => {
     setDigitizedNotes(track.notes, {
@@ -12,6 +12,7 @@ export default function TrackLibraryScreen() {
       subtitle: track.subtitle,
     });
     showToast(`${track.title} loaded`);
+    setActiveTab("practice");
     navigate(ROUTES.REVIEW);
   };
 

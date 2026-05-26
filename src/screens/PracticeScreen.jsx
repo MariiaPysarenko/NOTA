@@ -1,12 +1,14 @@
 import { useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import SheetMusicRenderer from "../components/SheetMusicRenderer";
+import AnnotationLayer from "../components/AnnotationLayer";
 import { usePitchDetector } from "../hooks/usePitchDetector";
 import { usePracticeSession } from "../hooks/usePracticeSession";
 import {
   centsToTunerIndex,
   feedbackToTunerClass,
 } from "../utils/musicNotes";
+import { ROUTES } from "../navigation/routes";
 
 const LIVE_FEEDBACK = {
   correct: { label: "CORRECT NOTE", className: "green" },
@@ -18,9 +20,21 @@ const LIVE_FEEDBACK = {
 };
 
 export default function PracticeScreen() {
-  const { selectedInstrument, exercise, digitizedNotes, pieceMeta, showToast } = useApp();
+  const {
+    selectedInstrument,
+    exercise,
+    digitizedNotes,
+    pieceMeta,
+    showToast,
+    navigate,
+    setPracticeSummary,
+    setPracticeSessions,
+    annotationsBySheet,
+    setActiveTab,
+  } = useApp();
   const pitch = usePitchDetector();
   const session = usePracticeSession({ pitch, exercise });
+  const sheetAnnotations = annotationsBySheet[pieceMeta.id] || [];
 
   const activeNoteId = useMemo(() => {
     if (session.currentNoteIndex < 0) return null;
@@ -31,7 +45,8 @@ export default function PracticeScreen() {
   const displayNote =
     session.phase === "practicing" ? pitch.detectedNote || "—" : session.phase === "summary" ? "✓" : "—";
 
-  const targetNote = session.currentTarget ?? exercise.notes[0]?.name ?? "—";
+  const targetNote = session.currentTarget ?? exercise.notes[0]?.writtenName ?? "—";
+  const targetConcert = session.currentConcertTarget ?? exercise.notes[0]?.concertName ?? "—";
   const feedback = session.phase === "practicing" ? pitch.feedback : "gray";
   const live = session.liveFeedback ?? "ready";
   const liveMeta = LIVE_FEEDBACK[live] ?? LIVE_FEEDBACK.ready;
@@ -59,6 +74,29 @@ export default function PracticeScreen() {
   };
 
   const formatMs = (ms) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`);
+
+  const tempoValue = 100;
+
+  const openResult = () => {
+    if (!session.summary) return;
+    setPracticeSummary(session.summary);
+    setPracticeSessions((prev) => [
+      ...prev,
+      {
+        id: `session-${Date.now()}`,
+        accuracy: session.summary.accuracy,
+        durationSeconds: Math.round(session.totalMs / 1000),
+        notesPlayed: exercise.notes.length,
+        mistakes: session.summary.wrongNotes.length + session.summary.missedNotes.length,
+        longestPauseMs: session.summary.longestPauseMs,
+        rhythmIssues: session.summary.timingIssues?.length ?? 0,
+        instrument: selectedInstrument.name,
+        date: new Date().toISOString(),
+      },
+    ]);
+    setActiveTab("progress");
+    navigate(ROUTES.RESULT);
+  };
 
   return (
     <main className="screen practice-screen">
@@ -104,12 +142,27 @@ export default function PracticeScreen() {
 
       <section className="digital-sheet-card practice-sheet">
         <p className="exercise-label">Digital sheet music</p>
-        <SheetMusicRenderer
-          notes={digitizedNotes}
-          activeNoteId={activeNoteId}
-          width={330}
-          height={130}
-        />
+        <div className="sheet-layer-wrap">
+          <SheetMusicRenderer
+            notes={digitizedNotes}
+            activeNoteId={activeNoteId}
+            width={330}
+            height={130}
+          />
+          <AnnotationLayer annotations={sheetAnnotations} />
+        </div>
+        <div className="practice-actions-row">
+          <button type="button" className="secondary small-btn" onClick={() => navigate(ROUTES.SHEET_EDITOR)}>
+            Edit / Draw
+          </button>
+          <button
+            type="button"
+            className="secondary small-btn"
+            onClick={() => navigate(ROUTES.REVIEW)}
+          >
+            Edit Notes
+          </button>
+        </div>
       </section>
 
       <section className={`pitch-card pitch-feedback-${feedback}`}>
@@ -145,9 +198,42 @@ export default function PracticeScreen() {
           </div>
           <div className="target-note">
             <h1>{targetNote}</h1>
-            <p>TARGET</p>
+            <p>WRITTEN TARGET</p>
           </div>
         </div>
+        <div className="practice-pitch-row">
+          <p>
+            Concert pitch target: <strong>{targetConcert}</strong>
+          </p>
+          <p>
+            Instrument: <strong>{selectedInstrument.name}</strong>
+          </p>
+        </div>
+
+        <section className="player-card">
+          <button type="button" className="play-btn">▶</button>
+          <button type="button" className="pause-btn">❚❚</button>
+          <div className="tempo">
+            <p>Tempo</p>
+            <b>{tempoValue} BPM</b>
+            <input type="range" min="50" max="150" defaultValue={tempoValue} readOnly />
+          </div>
+          <button type="button" className="loop-btn">↺</button>
+          <div className="waveform">
+            <span>Now</span>
+            <div className={session.phase === "practicing" ? "wave-active" : ""} />
+            <span>{Math.ceil(session.elapsedMs / 1000)}s</span>
+          </div>
+        </section>
+
+        <button
+          type="button"
+          className={`mic-btn ${session.phase === "practicing" ? "recording" : ""}`}
+          onClick={handleStartPractice}
+          aria-label="Toggle microphone listening"
+        >
+          🎤
+        </button>
 
         <button
           type="button"
@@ -200,9 +286,14 @@ export default function PracticeScreen() {
           )}
 
           <p className="summary-motivation">{session.summary.feedback}</p>
-          <button type="button" className="primary summary-retry" onClick={session.reset}>
-            Practice Again
-          </button>
+          <div className="buttons">
+            <button type="button" className="primary summary-retry" onClick={session.reset}>
+              Practice Again
+            </button>
+            <button type="button" className="secondary summary-retry" onClick={openResult}>
+              Result / Analysis
+            </button>
+          </div>
         </section>
       )}
     </main>

@@ -24,6 +24,9 @@ export function createNote(overrides = {}) {
     pitch: "C4",
     duration: "quarter",
     measure: 1,
+    beat: 1,
+    writtenPitch: "C4",
+    concertPitch: "C4",
     annotation: "",
     ...overrides,
   };
@@ -47,9 +50,12 @@ export function notesToExercise(notes, meta = {}) {
     notes: list.map((n) => ({
       id: n.id,
       name: n.pitch,
+      writtenName: n.writtenPitch || n.pitch,
+      concertName: n.concertPitch || n.pitch,
       durationMs: durationToMs(n.duration),
       duration: n.duration,
       measure: n.measure,
+      beat: n.beat ?? 1,
       annotation: n.annotation || "",
     })),
   };
@@ -61,8 +67,11 @@ export function exerciseToNotes(exercise) {
     createNote({
       id: n.id,
       pitch: n.name,
+      writtenPitch: n.writtenName ?? n.name,
+      concertPitch: n.concertName ?? n.name,
       duration: n.duration ?? msToDuration(n.durationMs),
       measure: n.measure ?? Math.floor(i / 4) + 1,
+      beat: n.beat ?? 1,
       annotation: n.annotation ?? "",
     })
   );
