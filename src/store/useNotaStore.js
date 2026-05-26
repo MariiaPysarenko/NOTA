@@ -40,6 +40,8 @@ import {
   todayKey,
 } from "../utils/gamification";
 import { generatePracticeFeedback } from "../utils/aiFeedback";
+import { getPostAuthRoute } from "../utils/userFlow";
+import { setSetupComplete } from "../services/localStore";
 
 let toastTimer;
 
@@ -59,13 +61,14 @@ export const useNotaStore = create((set, get) => ({
   annotationsBySheet: getLocalAnnotations(),
   practiceSessions: getLocalSessions(),
   practiceSummary: null,
+  lastPracticeResult: null,
   aiFeedback: null,
   favoriteIds: getFavorites(),
+  retryMeasures: null,
 
   gamification: initialGamification(),
   streak: { current: 0, longest: 0 },
   dailyGoalMinutes: 15,
-  fullscreenSheet: false,
   teacherMode: false,
   metronomeBpm: 80,
   metronomeRunning: false,
@@ -93,7 +96,7 @@ export const useNotaStore = create((set, get) => ({
         practiceSessions: sessions,
         gamification: g,
         streak,
-        route: user ? ROUTES.PRACTICE : ROUTES.AUTH_LOGIN,
+        route: user ? getPostAuthRoute() : ROUTES.AUTH_LOGIN,
         teacherMode: user?.teacherMode || false,
       });
 
@@ -120,7 +123,7 @@ export const useNotaStore = create((set, get) => ({
       practiceSessions: sessions,
       selectedInstrument: inst,
       teacherMode: user.teacherMode,
-      route: ROUTES.PRACTICE,
+      route: getPostAuthRoute(),
     });
     return user;
   },
@@ -130,6 +133,11 @@ export const useNotaStore = create((set, get) => ({
     const inst = instruments.find((i) => i.name === user.instrument) || instruments[0];
     set({ user, selectedInstrument: inst, route: ROUTES.INSTRUMENT });
     return user;
+  },
+
+  completeSetup: () => {
+    setSetupComplete();
+    set({ route: ROUTES.TRACK_CHOICE });
   },
 
   logout: async () => {
@@ -204,7 +212,7 @@ export const useNotaStore = create((set, get) => ({
   setPracticeSummary: (summary) => set({ practiceSummary: summary }),
   setAiFeedback: (aiFeedback) => set({ aiFeedback }),
 
-  setFullscreenSheet: (v) => set({ fullscreenSheet: v }),
+  setRetryMeasures: (measures) => set({ retryMeasures: measures }),
   setTeacherMode: (v) => {
     set({ teacherMode: v });
     const { user } = get();
@@ -277,12 +285,22 @@ export const useNotaStore = create((set, get) => ({
       gamification: g,
       streak,
       practiceSummary: sessionRecord.summary,
+      lastPracticeResult: {
+        ...sessionRecord,
+        summary: sessionRecord.summary,
+      },
       aiFeedback,
       streakPulse: streak.current > 0,
       newAchievements: achievementCheck.newAchievements,
     });
 
-    return { sessionRecord, aiFeedback, xpEarned, newAchievements: achievementCheck.newAchievements };
+    return {
+      sessionRecord,
+      aiFeedback,
+      xpEarned,
+      durationSeconds,
+      newAchievements: achievementCheck.newAchievements,
+    };
   },
 
   getExercise: () => {

@@ -1,15 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useEffect, useCallback, useState } from "react";
 import { useApp } from "../store/useNotaStore";
-import PracticeSheetPanel from "../components/practice/PracticeSheetPanel";
-import PracticePitchPanel from "../components/practice/PracticePitchPanel";
-import PracticeControls from "../components/practice/PracticeControls";
-import GamificationBar from "../components/GamificationBar";
+import PracticeSheetHero from "../components/practice/PracticeSheetHero";
+import PracticeMicHero from "../components/practice/PracticeMicHero";
 import FloatingMetronome from "../components/FloatingMetronome";
 import { usePitchDetector } from "../hooks/usePitchDetector";
 import { usePracticeSession } from "../hooks/usePracticeSession";
 import { useMetronome } from "../hooks/useMetronome";
-import { getLiveCoachMessage } from "../utils/liveCoach";
 import { ROUTES } from "../navigation/routes";
+import { levelFromXp } from "../utils/gamification";
 
 export default function PracticeScreen() {
   const {
@@ -19,20 +17,22 @@ export default function PracticeScreen() {
     annotationsBySheet,
     navigate,
     showToast,
-    fullscreenSheet,
-    setFullscreenSheet,
     metronomeBpm,
     setMetronomeBpm,
     metronomeRunning,
     setMetronomeRunning,
     recordPracticeSession,
-    newAchievements,
+    streak,
+    gamification,
+    retryMeasures,
+    setRetryMeasures,
   } = useApp();
 
   const [showMetro, setShowMetro] = useState(false);
+  const finishingRef = useRef(false);
   const pitch = usePitchDetector();
   const session = usePracticeSession({ pitch, exercise });
-  const metro = useMetronome(metronomeBpm, metronomeRunning);
+  const metro = useMetronome(metronomeBpm, metronomeRunning && showMetro);
 
   const sheetAnnotations = annotationsBySheet[pieceMeta.id] || [];
 
@@ -42,135 +42,117 @@ export default function PracticeScreen() {
     return note?.id ?? digitizedNotes[session.currentNoteIndex]?.id ?? null;
   }, [session.currentNoteIndex, exercise.notes, digitizedNotes]);
 
-  const displayNote = session.phase === "practicing" ? pitch.detectedNote || "—" : "—";
   const targetNote = session.currentTarget ?? exercise.notes[0]?.writtenName ?? "—";
-  const feedback = session.phase === "practicing" ? pitch.feedback : "gray";
+  const displayNote = session.phase === "practicing" ? pitch.detectedNote || "—" : "—";
   const progressRatio = session.totalMs ? session.elapsedMs / session.totalMs : 0;
-  const accuracy =
-    session.phase === "summary" && session.summary
-      ? session.summary.accuracy
-      : session.phase === "practicing"
-        ? session.liveAccuracy
-        : null;
+  const { level } = levelFromXp(gamification.totalXp || 0);
 
-  const coachLine = getLiveCoachMessage({
-    liveFeedback: session.liveFeedback,
-    currentMeasure: exercise.notes[session.currentNoteIndex]?.measure,
-    difficultMeasures: session.difficultMeasures,
-  });
+  const completeAndReview = useCallback(
+    async (summary) => {
+      if (finishingRef.current) return;
+      finishingRef.current = true;
+      setMetronomeRunning(false);
+      const durationSeconds = Math.max(1, Math.round(session.elapsedMs / 1000));
+      await recordPracticeSession(summary, { durationSeconds, completedPiece: true });
+      showToast("Session complete");
+      navigate(ROUTES.RESULT);
+    },
+    [recordPracticeSession, navigate, showToast, session.elapsedMs, setMetronomeRunning]
+  );
 
-  const completeSession = async (summary) => {
-    const durationSeconds = Math.round(session.elapsedMs / 1000);
-    const { newAchievements: earned } = await recordPracticeSession(summary, {
-      durationSeconds,
-      completedPiece: true,
-    });
-    if (earned?.length) showToast(`Achievement unlocked: ${earned[0].title}`);
-  };
+  useEffect(() => {
+    if (session.phase === "summary" && session.summary) {
+      completeAndReview(session.summary);
+    }
+  }, [session.phase, session.summary, completeAndReview]);
 
-  const handleMicToggle = async () => {
+  useEffect(() => {
+    finishingRef.current = false;
+  }, [pieceMeta.id]);
+
+  useEffect(() => {
+    if (retryMeasures?.length) {
+      showToast(`Focus on measures ${retryMeasures.join(", ")}`);
+    }
+  }, [retryMeasures, showToast]);
+
+  const handleMicPress = async () => {
     if (session.phase === "practicing") {
-      if (pitch.isPaused) pitch.resume();
-      else pitch.pause();
+      const summary = session.finish();
+      if (summary) await completeAndReview(summary);
       return;
     }
-    if (session.phase === "summary") session.reset();
+    finishingRef.current = false;
     const ok = await session.startPractice();
     if (!ok && pitch.error) showToast(pitch.error);
     else if (ok) showToast("Listening…");
   };
 
-  const handlePauseToggle = () => {
+  const handlePause = () => {
+    if (session.phase !== "practicing") return;
     if (pitch.isPaused) pitch.resume();
     else pitch.pause();
   };
 
-  const handleStop = async () => {
-    const summary = session.finish();
-    if (!summary) return;
-    setMetronomeRunning(false);
-    await completeSession(summary);
-    showToast("Session complete");
-    navigate(ROUTES.RESULT);
-  };
-
   const toggleMetro = () => {
-    setShowMetro((v) => !v);
-    setMetronomeRunning(!metronomeRunning);
+    setShowMetro((v) => {
+      const next = !v;
+      if (!next) setMetronomeRunning(false);
+      return next;
+    });
   };
 
   return (
-    <main
-      className={`screen practice-screen practice-screen-clean ${
-        fullscreenSheet ? "sheet-fullscreen" : ""
-      }`}
-    >
-      <GamificationBar />
+    <main className="screen practice-v2">
+      <header className="practice-v2-header">
+        <h1 className="text-clamp-1">{pieceMeta.title}</h1>
+        <button type="button" className="link-btn practice-change" onClick={() => navigate(ROUTES.TRACK_CHOICE)}>
+          Change piece
+        </button>
+      </header>
 
-      <section className="practice-header-minimal practice-top">
-        <h2 className="text-clamp-1">{pieceMeta.title}</h2>
-        <div className="practice-header-actions">
-          <button
-            type="button"
-            className="secondary small-btn"
-            onClick={() => setFullscreenSheet(!fullscreenSheet)}
-          >
-            {fullscreenSheet ? "Exit full" : "Full sheet"}
-          </button>
-          <span
-            className={
-              pitch.micState === "detecting"
-                ? "live active-live"
-                : pitch.micState === "listening"
-                  ? "live"
-                  : ""
-            }
-          >
-            ● {pitch.micState.toUpperCase()}
-          </span>
-        </div>
-      </section>
-
-      {coachLine && session.phase === "practicing" && (
-        <p className="live-coach-line">{coachLine}</p>
-      )}
-
-      <PracticeSheetPanel
+      <PracticeSheetHero
         notes={digitizedNotes}
         annotations={sheetAnnotations}
         activeNoteId={activeNoteId}
         difficultMeasures={session.difficultMeasures}
         progress={progressRatio}
-        onEditNotes={() => navigate(ROUTES.REVIEW)}
+        onChooseTrack={() => navigate(ROUTES.TRACK_CHOICE)}
       />
 
-      <PracticePitchPanel
-        feedback={feedback}
-        liveFeedback={session.liveFeedback}
-        detectedNote={displayNote}
-        targetNote={targetNote}
-        cents={pitch.cents}
-        accuracy={accuracy}
-      />
-
-      <PracticeControls
+      <PracticeMicHero
         micState={pitch.micState}
         isPracticing={session.phase === "practicing"}
-        onMicToggle={handleMicToggle}
-        onPauseToggle={handlePauseToggle}
-        onStop={handleStop}
-        micError={pitch.error}
-        hasMicrophone={pitch.hasMicrophone}
+        targetNote={targetNote}
+        detectedNote={displayNote}
+        onPress={handleMicPress}
       />
 
-      <div className="practice-toolbar">
-        <button type="button" className="secondary small-btn" onClick={toggleMetro}>
-          {showMetro ? "Hide metronome" : "Metronome"}
+      <footer className="practice-v2-stats">
+        <span>🔥 {streak.current} streak</span>
+        <span>Lv {level}</span>
+        <span>{gamification.totalXp || 0} XP</span>
+      </footer>
+
+      <footer className="practice-v2-bottom">
+        <button type="button" className="secondary practice-bottom-btn" onClick={toggleMetro}>
+          {showMetro ? "Hide metro" : "Metronome"}
         </button>
-        <button type="button" className="secondary small-btn" onClick={() => navigate(ROUTES.SHEET_EDITOR)}>
-          Edit markings
+        <button
+          type="button"
+          className="secondary practice-bottom-btn"
+          onClick={handlePause}
+          disabled={session.phase !== "practicing"}
+        >
+          {pitch.isPaused ? "Resume" : "Pause"}
         </button>
-      </div>
+      </footer>
+
+      {pitch.error && (
+        <p className="mic-error" role="alert">
+          {pitch.error}
+        </p>
+      )}
 
       <FloatingMetronome
         visible={showMetro}
@@ -179,12 +161,6 @@ export default function PracticeScreen() {
         isRunning={metronomeRunning && metro.isRunning}
         onToggle={() => setMetronomeRunning(!metronomeRunning)}
       />
-
-      {newAchievements?.length > 0 && session.phase !== "practicing" && (
-        <p className="achievement-toast streak-pulse">
-          {newAchievements[0].icon} {newAchievements[0].title} unlocked!
-        </p>
-      )}
     </main>
   );
 }

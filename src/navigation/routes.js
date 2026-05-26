@@ -25,11 +25,11 @@ export const AUTH_ROUTES = [ROUTES.AUTH_LOGIN, ROUTES.AUTH_REGISTER];
 
 export const BACK_ROUTE = {
   [ROUTES.INSTRUMENT]: null,
-  [ROUTES.TRACK_CHOICE]: ROUTES.INSTRUMENT,
   [ROUTES.LIBRARY]: ROUTES.TRACK_CHOICE,
   [ROUTES.UPLOAD]: ROUTES.TRACK_CHOICE,
   [ROUTES.REVIEW]: ROUTES.TRACK_CHOICE,
-  [ROUTES.PRACTICE]: ROUTES.REVIEW,
+  [ROUTES.PRACTICE]: ROUTES.TRACK_CHOICE,
+  [ROUTES.TRACK_CHOICE]: null,
   [ROUTES.SHEET_EDITOR]: ROUTES.PRACTICE,
   [ROUTES.PROGRESS]: null,
   [ROUTES.PROFILE]: null,
@@ -41,5 +41,10 @@ export const BACK_ROUTE = {
 export function showBottomNav(route, isAuthenticated) {
   if (!isAuthenticated) return false;
   if (AUTH_ROUTES.includes(route)) return false;
-  return TAB_ROUTES.includes(route) || route === ROUTES.RESULT;
+  if (route === ROUTES.INSTRUMENT) return false;
+  return (
+    TAB_ROUTES.includes(route) ||
+    route === ROUTES.RESULT ||
+    route === ROUTES.TRACK_CHOICE
+  );
 }

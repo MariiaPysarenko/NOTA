@@ -1,49 +1,56 @@
 import { useNotaStore } from "../store/useNotaStore";
 import { ROUTES } from "../navigation/routes";
-import { exportResultImage, downloadBlob, shareWithTeacher } from "../utils/exportResult";
+import {
+  exportResultImage,
+  downloadBlob,
+  shareWithTeacher,
+  shareResultCard,
+} from "../utils/exportResult";
 import EmptyState from "../components/EmptyState";
+import { levelFromXp, DAILY_GOAL_MINUTES, minutesPracticedToday } from "../utils/gamification";
 
-function BarChart({ items, labelKey = "label", valueKey = "value", max = 100 }) {
+function NoteList({ title, items, empty }) {
   return (
-    <div className="bar-chart">
-      {items.map((item) => (
-        <div key={item[labelKey]} className="bar-row">
-          <span className="bar-label">{item[labelKey]}</span>
-          <div className="bar-track">
-            <span
-              className="bar-fill"
-              style={{ width: `${Math.min(100, (item[valueKey] / max) * 100)}%` }}
-            />
-          </div>
-          <span className="bar-value">{item[valueKey]}</span>
-        </div>
-      ))}
+    <div className="review-detail-card glass-card">
+      <h3>{title}</h3>
+      {items?.length ? (
+        <ul className="review-note-list">
+          {items.map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="muted">{empty}</p>
+      )}
     </div>
   );
 }
 
 export default function ResultAnalysisScreen() {
   const practiceSummary = useNotaStore((s) => s.practiceSummary);
+  const lastPracticeResult = useNotaStore((s) => s.lastPracticeResult);
   const aiFeedback = useNotaStore((s) => s.aiFeedback);
   const pieceMeta = useNotaStore((s) => s.pieceMeta);
   const selectedInstrument = useNotaStore((s) => s.selectedInstrument);
   const streak = useNotaStore((s) => s.streak);
-  const teacherMode = useNotaStore((s) => s.teacherMode);
+  const gamification = useNotaStore((s) => s.gamification);
   const newAchievements = useNotaStore((s) => s.newAchievements);
   const clearNewAchievements = useNotaStore((s) => s.clearNewAchievements);
   const navigate = useNotaStore((s) => s.navigate);
   const showToast = useNotaStore((s) => s.showToast);
-  const gamification = useNotaStore((s) => s.gamification);
+  const setRetryMeasures = useNotaStore((s) => s.setRetryMeasures);
+  const teacherMode = useNotaStore((s) => s.teacherMode);
+  const practiceSessions = useNotaStore((s) => s.practiceSessions);
 
   if (!practiceSummary) {
     return (
-      <main className="screen result-screen">
+      <main className="screen review-screen">
         <EmptyState
           icon="🎼"
-          title="No session to analyze"
-          message="Complete a practice run to see accuracy breakdown, missed notes, and AI coaching tips."
-          actionLabel="Go to Practice"
-          onAction={() => navigate(ROUTES.PRACTICE)}
+          title="No session to review"
+          message="Complete a practice run to see your results and coaching feedback."
+          actionLabel="Choose music"
+          onAction={() => navigate(ROUTES.TRACK_CHOICE)}
         />
       </main>
     );
@@ -51,56 +58,97 @@ export default function ResultAnalysisScreen() {
 
   const s = practiceSummary;
   const accuracy = s.accuracy ?? 0;
+  const xpEarned = lastPracticeResult?.xpEarned ?? 0;
+  const durationSec = lastPracticeResult?.durationSeconds ?? 0;
+  const durationMin = Math.max(1, Math.round(durationSec / 60));
+  const { level, progress } = levelFromXp(gamification.totalXp || 0);
+  const dailyMinutes = minutesPracticedToday(practiceSessions);
 
-  const measureBars = (s.difficultMeasures || []).map((m) => ({
-    label: `M${m}`,
-    value: 100,
-  }));
+  const correctNotes = (s.noteResults || [])
+    .filter((r) => r.hits > 0 && !r.wrong?.length)
+    .map((r) => r.expected);
+  const wrongNotes = [
+    ...(s.wrongNotes || []),
+    ...(s.missedNotes || []),
+  ].filter(Boolean);
 
-  const noteBars = (s.noteResults || [])
-    .filter((r) => r.missed || r.wrong?.length || r.earlyLate)
-    .slice(0, 6)
-    .map((r) => ({
-      label: r.expected,
-      value: r.hits > 0 ? 40 : 100,
-    }));
-
-  const handleExport = async () => {
-    const blob = await exportResultImage({
-      title: pieceMeta.title,
-      accuracy,
-      xp: 25,
-      streak: streak.current,
-      instrument: selectedInstrument.name,
-    });
-    downloadBlob(blob, "nota-result.png");
-    showToast("Image saved");
+  const exportPayload = {
+    title: pieceMeta.title,
+    accuracy,
+    xp: xpEarned,
+    streak: streak.current,
+    instrument: selectedInstrument.name,
+    durationSeconds: durationSec,
+    durationMinutes: durationMin,
   };
 
   const handleShare = async () => {
-    const shared = await shareWithTeacher({
-      title: pieceMeta.title,
-      accuracy,
-      minutes: Math.round((s.durationSeconds || 60) / 60) || 1,
-      instrument: selectedInstrument.name,
-    });
-    showToast(shared ? "Shared" : "Copied to clipboard");
+    const blob = await exportResultImage(exportPayload);
+    const shared = await shareResultCard(blob, pieceMeta.title);
+    if (!shared) {
+      if (teacherMode) {
+        await shareWithTeacher({
+          title: pieceMeta.title,
+          accuracy,
+          minutes: durationMin,
+          instrument: selectedInstrument.name,
+          xp: xpEarned,
+          streak: streak.current,
+        });
+      } else {
+        downloadBlob(blob, "nota-practice.png");
+      }
+    }
+    showToast("Result shared");
+  };
+
+  const handleSave = () => {
+    showToast("Result saved to your progress");
+  };
+
+  const handleRetryFragment = () => {
+    const measures = s.difficultMeasures?.length ? s.difficultMeasures : [1];
+    setRetryMeasures(measures);
+    navigate(ROUTES.PRACTICE);
+    showToast(`Loop measures ${measures.join(", ")}`);
   };
 
   return (
-    <main className="screen result-screen">
-      <section className="hero small">
-        <h1>
-          Session <span>Analysis</span>
-        </h1>
-        <p>{pieceMeta.title}</p>
-      </section>
-
-      <section className="result-hero glass-card">
-        <div className="accuracy-ring" data-level={accuracy >= 85 ? "high" : accuracy >= 60 ? "mid" : "low"}>
-          <strong>{accuracy}%</strong>
-          <span>Accuracy</span>
+    <main className="screen review-screen">
+      <section className="review-celebrate glass-card">
+        <p className="exercise-label">Session complete</p>
+        <div
+          className="review-accuracy-big"
+          data-level={accuracy >= 85 ? "high" : accuracy >= 60 ? "mid" : "low"}
+        >
+          {accuracy}%
         </div>
+        <p className="review-subtitle">{pieceMeta.title}</p>
+
+        <div className="review-reward-row">
+          <div>
+            <span>XP earned</span>
+            <strong>+{xpEarned}</strong>
+          </div>
+          <div>
+            <span>Duration</span>
+            <strong>{durationMin}m</strong>
+          </div>
+          <div>
+            <span>Streak</span>
+            <strong>🔥 {streak.current}</strong>
+          </div>
+        </div>
+
+        <div className="review-streak-bar">
+          <div className="level-progress">
+            <span style={{ width: `${Math.min(100, (dailyMinutes / DAILY_GOAL_MINUTES) * 100)}%` }} />
+          </div>
+          <p className="profile-level-caption">
+            Daily goal {dailyMinutes}/{DAILY_GOAL_MINUTES}m · Level {level} ({progress}% to next)
+          </p>
+        </div>
+
         {newAchievements?.length > 0 && (
           <div className="achievement-unlock streak-pulse">
             {newAchievements.map((a) => (
@@ -116,12 +164,12 @@ export default function ResultAnalysisScreen() {
       </section>
 
       {aiFeedback && (
-        <section className="ai-feedback glass-card">
+        <section className="ai-feedback glass-card review-coach">
           <p className="exercise-label">AI Coach</p>
           <p className="ai-message">{aiFeedback.message}</p>
-          <ul className="ai-tips">
-            {aiFeedback.tips.map((tip) => (
-              <li key={tip}>{tip}</li>
+          <ul className="review-coach-lines">
+            {(aiFeedback.coachLines || aiFeedback.tips || []).map((line) => (
+              <li key={line}>{line}</li>
             ))}
           </ul>
           <p className="ai-next">
@@ -130,69 +178,45 @@ export default function ResultAnalysisScreen() {
         </section>
       )}
 
-      <section className="analysis-grid">
-        <div className="analysis-card glass-card">
-          <h3>Missed notes</h3>
-          {s.missedNotes?.length ? (
-            <ul>{s.missedNotes.map((n) => <li key={n}>{n}</li>)}</ul>
-          ) : (
-            <p className="muted">None — great focus!</p>
-          )}
-        </div>
-        <div className="analysis-card glass-card">
-          <h3>Rhythm issues</h3>
-          {s.timingIssues?.length ? (
-            <ul>{s.timingIssues.map((n) => <li key={n}>{n}</li>)}</ul>
-          ) : (
-            <p className="muted">Timing was steady.</p>
-          )}
-        </div>
-        <div className="analysis-card glass-card">
+      <NoteList title="Correct notes" items={correctNotes.slice(0, 8)} empty="Keep practicing to log hits." />
+      <NoteList title="Needs work" items={wrongNotes.slice(0, 8)} empty="Great — no major misses." />
+
+      <div className="review-detail-grid">
+        <div className="review-detail-card glass-card">
           <h3>Difficult measures</h3>
           {s.difficultMeasures?.length ? (
-            <p>{s.difficultMeasures.join(", ")}</p>
+            <p>{s.difficultMeasures.map((m) => `M${m}`).join(", ")}</p>
           ) : (
-            <p className="muted">No repeated trouble spots.</p>
+            <p className="muted">None flagged</p>
           )}
         </div>
-        <div className="analysis-card glass-card">
-          <h3>Longest pause</h3>
-          <p>{((s.longestPauseMs || 0) / 1000).toFixed(1)}s</p>
+        <div className="review-detail-card glass-card">
+          <h3>Rhythm / timing</h3>
+          {s.timingIssues?.length ? (
+            <ul className="review-note-list">
+              {s.timingIssues.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">Steady timing</p>
+          )}
         </div>
-      </section>
+      </div>
 
-      {noteBars.length > 0 && (
-        <section className="glass-card chart-section">
-          <h3>Problem notes</h3>
-          <BarChart items={noteBars} max={100} />
-        </section>
-      )}
-
-      {measureBars.length > 0 && (
-        <section className="glass-card chart-section">
-          <h3>Difficult measures</h3>
-          <BarChart items={measureBars} max={100} />
-        </section>
-      )}
-
-      <section className="glass-card accuracy-chart">
-        <h3>Session score</h3>
-        <BarChart items={[{ label: "Accuracy", value: accuracy }]} max={100} />
-        <p className="muted">Total XP: {gamification.totalXp}</p>
-      </section>
-
-      <div className="buttons">
-        <button type="button" className="primary" onClick={() => navigate(ROUTES.PRACTICE)}>
-          Practice again
+      <div className="review-actions">
+        <button type="button" className="primary" onClick={handleRetryFragment}>
+          Retry fragment
         </button>
-        <button type="button" className="secondary" onClick={handleExport}>
-          Export image
+        <button type="button" className="secondary" onClick={() => navigate(ROUTES.PRACTICE)}>
+          Continue practice
         </button>
-        {teacherMode && (
-          <button type="button" className="secondary" onClick={handleShare}>
-            Share with teacher
-          </button>
-        )}
+        <button type="button" className="secondary" onClick={handleSave}>
+          Save result
+        </button>
+        <button type="button" className="secondary" onClick={handleShare}>
+          Share result
+        </button>
       </div>
     </main>
   );

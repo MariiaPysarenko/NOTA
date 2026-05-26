@@ -4,6 +4,8 @@ const KEYS = {
   ANNOTATIONS: "nota_annotations",
   GAMIFICATION: "nota_gamification",
   FAVORITES: "nota_favorites",
+  PRE_AUTH_ONBOARDING: "nota_pre_auth_onboarding_done",
+  SETUP_COMPLETE: "nota_setup_complete",
   ONBOARDING: "nota_onboarding_done",
   INTRO: "nota_intro_done",
 };
@@ -65,8 +67,31 @@ export function setFavorites(ids) {
   writeJson(KEYS.FAVORITES, ids);
 }
 
+/** Pre-registration product onboarding (shown once ever) */
+export function isPreAuthOnboardingDone() {
+  return localStorage.getItem(KEYS.PRE_AUTH_ONBOARDING) === "1";
+}
+
+export function setPreAuthOnboardingDone() {
+  localStorage.setItem(KEYS.PRE_AUTH_ONBOARDING, "1");
+}
+
+/** Instrument + first-time setup finished */
+export function isSetupComplete() {
+  return localStorage.getItem(KEYS.SETUP_COMPLETE) === "1";
+}
+
+export function setSetupComplete() {
+  localStorage.setItem(KEYS.SETUP_COMPLETE, "1");
+}
+
+export function clearSetupComplete() {
+  localStorage.removeItem(KEYS.SETUP_COMPLETE);
+}
+
+/** @deprecated Legacy tip overlay — treated as done if setup complete */
 export function isOnboardingDone() {
-  return localStorage.getItem(KEYS.ONBOARDING) === "1";
+  return isSetupComplete() || localStorage.getItem(KEYS.ONBOARDING) === "1";
 }
 
 export function setOnboardingDone() {

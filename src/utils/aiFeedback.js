@@ -41,10 +41,24 @@ export function generatePracticeFeedback(sessionStats) {
   else if (hardMeasures.length) nextStep = `Isolate measures ${hardMeasures[0]}–${hardMeasures[hardMeasures.length - 1]} tomorrow.`;
   else if (accuracy >= 85) nextStep = "Add dynamics and record yourself for self-review.";
 
+  const coachLines = [];
+  if (accuracy >= 85) coachLines.push("Great rhythm improvement today.");
+  else if (rhythm > 0) coachLines.push("Keep steady rhythm — use the metronome on problem spots.");
+  else coachLines.push("Your tone is getting more stable — stay focused on intonation.");
+
+  if (hardMeasures.length) {
+    coachLines.push(`Measure ${hardMeasures[0]} still needs work.`);
+  }
+  if (missed > 0) {
+    coachLines.push(`Slow down on ${sessionStats.missedNotes[0]} until it feels natural.`);
+  }
+  if (accuracy >= 90) coachLines.push("Outstanding session — you're performance-ready.");
+
   return {
     provider,
     message,
     tips: tips.slice(0, 4),
+    coachLines: coachLines.slice(0, 3),
     nextStep,
     generatedAt: new Date().toISOString(),
   };

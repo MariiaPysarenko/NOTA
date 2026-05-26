@@ -14,7 +14,7 @@ export default function AppShell({ children }) {
   const canGoBack = Boolean(backRoute) && route !== ROUTES.PROGRESS && route !== ROUTES.PROFILE;
   const hasNav = authReady && user && showBottomNav(route, true);
 
-  const goHome = () => navigate(user ? ROUTES.PRACTICE : ROUTES.AUTH_LOGIN);
+  const goHome = () => navigate(user ? ROUTES.TRACK_CHOICE : ROUTES.AUTH_LOGIN);
   const goBack = () => {
     if (backRoute) navigate(backRoute);
   };

@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import AppShell from "./components/AppShell";
-import IntroSplash from "./components/IntroSplash";
-import OnboardingTutorial from "./components/OnboardingTutorial";
+import OnboardingFlow from "./components/OnboardingFlow";
 import AuthLoading from "./components/AuthLoading";
 import { useNotaStore } from "./store/useNotaStore";
 import { ROUTES } from "./navigation/routes";
-import { isIntroDone, setIntroDone, isOnboardingDone, setOnboardingDone } from "./services/localStore";
+import {
+  isPreAuthOnboardingDone,
+  setPreAuthOnboardingDone,
+} from "./services/localStore";
 import AuthScreen from "./screens/AuthScreen";
 import InstrumentSelectionScreen from "./screens/InstrumentSelectionScreen";
 import PracticeScreen from "./screens/PracticeScreen";
@@ -21,99 +23,82 @@ import "./App.css";
 
 function AppRouter() {
   const route = useNotaStore((s) => s.route);
-  const user = useNotaStore((s) => s.user);
-  const authReady = useNotaStore((s) => s.authReady);
-  const [onboardingStep, setOnboardingStep] = useState(0);
-  const showOnboarding =
-    user && !isOnboardingDone() && (route === ROUTES.INSTRUMENT || route === ROUTES.PRACTICE);
 
-  if (!authReady) return <AuthLoading />;
-
-  if (!user) {
+  if (!useNotaStore((s) => s.user)) {
     if (route === ROUTES.AUTH_REGISTER) return <AuthScreen mode="register" />;
     return <AuthScreen mode="login" />;
   }
 
-  let screen;
   switch (route) {
-    case ROUTES.AUTH_LOGIN:
-    case ROUTES.AUTH_REGISTER:
-      screen = <PracticeScreen />;
-      break;
     case ROUTES.INSTRUMENT:
-      screen = <InstrumentSelectionScreen />;
-      break;
+      return <InstrumentSelectionScreen />;
     case ROUTES.TRACK_CHOICE:
-      screen = <TrackChoiceScreen />;
-      break;
+      return <TrackChoiceScreen />;
     case ROUTES.LIBRARY:
-      screen = <TrackLibraryScreen />;
-      break;
+      return <TrackLibraryScreen />;
     case ROUTES.UPLOAD:
-      screen = <UploadDigitizeScreen />;
-      break;
+      return <UploadDigitizeScreen />;
     case ROUTES.REVIEW:
-      screen = <ReviewEditScreen />;
-      break;
+      return <ReviewEditScreen />;
     case ROUTES.PRACTICE:
-      screen = <PracticeScreen />;
-      break;
+      return <PracticeScreen />;
     case ROUTES.SHEET_EDITOR:
-      screen = <SheetEditorScreen />;
-      break;
+      return <SheetEditorScreen />;
     case ROUTES.PROGRESS:
-      screen = <ProgressScreen />;
-      break;
+      return <ProgressScreen />;
     case ROUTES.PROFILE:
-      screen = <ProfileScreen />;
-      break;
+      return <ProfileScreen />;
     case ROUTES.RESULT:
-      screen = <ResultAnalysisScreen />;
-      break;
+      return <ResultAnalysisScreen />;
     default:
-      screen = <PracticeScreen />;
+      return <TrackChoiceScreen />;
   }
-
-  return (
-    <>
-      {screen}
-      {showOnboarding && (
-        <OnboardingTutorial
-          step={onboardingStep}
-          onNext={() => {
-            if (onboardingStep >= 3) setOnboardingDone();
-            else setOnboardingStep((s) => s + 1);
-          }}
-          onSkip={() => setOnboardingDone()}
-        />
-      )}
-    </>
-  );
 }
 
 export default function App() {
   const initApp = useNotaStore((s) => s.initApp);
-  const [showIntro, setShowIntro] = useState(!isIntroDone());
-  const user = useNotaStore((s) => s.user);
   const authReady = useNotaStore((s) => s.authReady);
+  const user = useNotaStore((s) => s.user);
+  const [, bump] = useState(0);
 
   useEffect(() => {
     initApp();
   }, [initApp]);
 
-  return (
-    <>
-      {showIntro && authReady && user && (
-        <IntroSplash
-          onDone={() => {
-            setIntroDone();
-            setShowIntro(false);
+  if (!authReady) {
+    return (
+      <div className="app app-standalone">
+        <AuthLoading />
+      </div>
+    );
+  }
+
+  if (!isPreAuthOnboardingDone()) {
+    return (
+      <div className="app app-standalone">
+        <OnboardingFlow
+          onComplete={() => {
+            setPreAuthOnboardingDone();
+            bump((n) => n + 1);
           }}
         />
-      )}
-      <AppShell>
-        <AppRouter />
-      </AppShell>
-    </>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="app app-standalone">
+        <div className="phone phone-auth">
+          <AppRouter />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <AppShell>
+      <AppRouter />
+    </AppShell>
   );
 }

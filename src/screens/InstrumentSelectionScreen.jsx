@@ -4,7 +4,8 @@ import { instruments } from "../instruments";
 import { ROUTES } from "../navigation/routes";
 
 export default function InstrumentSelectionScreen() {
-  const { selectedInstrument, setSelectedInstrument, navigate, showToast } = useApp();
+  const { selectedInstrument, setSelectedInstrument, navigate, showToast, completeSetup } =
+    useApp();
   const [category, setCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [view, setView] = useState("featured");
@@ -90,7 +91,7 @@ export default function InstrumentSelectionScreen() {
           <button
             type="button"
             className="primary"
-            onClick={() => navigate(ROUTES.TRACK_CHOICE)}
+            onClick={() => completeSetup()}
           >
             Continue with {selectedInstrument.name.split(" ")[0]}
           </button>
@@ -147,7 +148,7 @@ export default function InstrumentSelectionScreen() {
         <button
           type="button"
           className="primary"
-          onClick={() => navigate(ROUTES.TRACK_CHOICE)}
+          onClick={() => completeSetup()}
         >
           Continue
         </button>
