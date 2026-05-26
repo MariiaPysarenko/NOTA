@@ -3,26 +3,32 @@ import {
   DEMO_EXERCISE,
   evaluatePractice,
   getExpectedNote,
+  getExpectedNoteIndex,
   getTotalDurationMs,
 } from "../utils/exercise";
+
 const SAMPLE_INTERVAL_MS = 80;
 const UNSTABLE_CENTS_THRESHOLD = 18;
+const PAUSE_THRESHOLD_MS = 450;
 
 /**
- * Runs a timed exercise, collects pitch samples, and produces a summary.
+ * Timed practice session with real-time feedback: correct, wrong, pause, rhythm.
  */
 export function usePracticeSession({ pitch, exercise: initialExercise }) {
   const [exercise, setExercise] = useState(initialExercise ?? DEMO_EXERCISE);
-  const [phase, setPhase] = useState("idle"); // idle | practicing | summary
+  const [phase, setPhase] = useState("idle");
   const [elapsedMs, setElapsedMs] = useState(0);
   const [summary, setSummary] = useState(null);
   const [currentTarget, setCurrentTarget] = useState(null);
+  const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
+  const [liveFeedback, setLiveFeedback] = useState("ready");
 
   const samplesRef = useRef([]);
   const centsHistoryRef = useRef([]);
   const startTimeRef = useRef(0);
   const intervalRef = useRef(null);
   const noteWindowRef = useRef({ index: -1, enteredAt: 0 });
+  const pauseStartRef = useRef(null);
 
   useEffect(() => {
     setExercise(initialExercise ?? DEMO_EXERCISE);
@@ -32,16 +38,17 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
 
   const recordSample = useCallback(() => {
     const now = Date.now() - startTimeRef.current;
+    const idx = getExpectedNoteIndex(exercise, now);
     const expected = getExpectedNote(exercise, now);
     const targetNote = expected.name;
     pitch.setTargetNote(targetNote);
     setCurrentTarget(targetNote);
+    setCurrentNoteIndex(idx);
 
     const detected = pitch.detectedNote;
     const isSilent = pitch.feedback === "gray";
     const noteCents = pitch.cents;
 
-    // Track cents variance for unstable pitch detection
     if (noteCents != null && !isSilent) {
       centsHistoryRef.current.push(noteCents);
       if (centsHistoryRef.current.length > 8) centsHistoryRef.current.shift();
@@ -58,22 +65,33 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
       unstable = Math.sqrt(variance) > UNSTABLE_CENTS_THRESHOLD;
     }
 
-    // Early/late: first sound in note window vs expected start
-    const noteIdx = exercise.notes.findIndex((n, i) => {
-      let start = 0;
-      for (let j = 0; j < i; j++) start += exercise.notes[j].durationMs;
-      return now >= start && now < start + n.durationMs;
-    });
+    if (idx !== noteWindowRef.current.index) {
+      let windowStart = 0;
+      for (let j = 0; j < idx; j++) windowStart += exercise.notes[j].durationMs;
+      noteWindowRef.current = { index: idx, enteredAt: windowStart };
+    }
 
     let timingOff = false;
-    if (noteIdx >= 0 && noteWindowRef.current.index !== noteIdx) {
-      let windowStart = 0;
-      for (let j = 0; j < noteIdx; j++) windowStart += exercise.notes[j].durationMs;
-      noteWindowRef.current = { index: noteIdx, enteredAt: windowStart };
-    }
-    if (!isSilent && detected && noteWindowRef.current.index === noteIdx) {
+    if (!isSilent && detected && noteWindowRef.current.index === idx) {
       const offset = now - noteWindowRef.current.enteredAt;
-      if (offset < 120 || offset > expected.durationMs - 120) timingOff = true;
+      const expectedDur = expected.durationMs;
+      if (offset < 100 || offset > expectedDur * 0.85) timingOff = true;
+    }
+
+    // Real-time feedback
+    if (isSilent) {
+      if (pauseStartRef.current == null) pauseStartRef.current = now;
+      const pauseLen = now - pauseStartRef.current;
+      if (pauseLen > PAUSE_THRESHOLD_MS) setLiveFeedback("pause");
+      else setLiveFeedback("silent");
+    } else {
+      pauseStartRef.current = null;
+      if (timingOff) setLiveFeedback("rhythm");
+      else if (detected === targetNote && Math.abs(noteCents ?? 99) <= 35)
+        setLiveFeedback("correct");
+      else if (detected && detected !== targetNote) setLiveFeedback("wrong");
+      else if (detected) setLiveFeedback("rhythm");
+      else setLiveFeedback("silent");
     }
 
     samplesRef.current.push({
@@ -94,12 +112,14 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     const result = evaluatePractice(exercise, samplesRef.current);
     setSummary(result);
     setPhase("summary");
+    setLiveFeedback("ready");
   }, [exercise, pitch]);
 
   const startPractice = useCallback(async () => {
     samplesRef.current = [];
     centsHistoryRef.current = [];
     noteWindowRef.current = { index: -1, enteredAt: 0 };
+    pauseStartRef.current = null;
     setSummary(null);
     setElapsedMs(0);
 
@@ -107,13 +127,13 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     if (!ok) return;
 
     setPhase("practicing");
+    setLiveFeedback("silent");
     startTimeRef.current = Date.now();
 
     intervalRef.current = setInterval(() => {
       const now = Date.now() - startTimeRef.current;
       setElapsedMs(now);
       recordSample();
-
       if (now >= totalMs) finish();
     }, SAMPLE_INTERVAL_MS);
   }, [pitch, totalMs, finish, recordSample]);
@@ -125,22 +145,24 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     setElapsedMs(0);
     setSummary(null);
     setCurrentTarget(null);
+    setCurrentNoteIndex(-1);
+    setLiveFeedback("ready");
     samplesRef.current = [];
   }, [pitch]);
 
-  useEffect(() => () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    },
+    []
+  );
 
   const progress = Math.min(100, Math.round((elapsedMs / totalMs) * 100));
-  const noteIndex = exercise.notes.findIndex((_, i) => {
-    let start = 0;
-    for (let j = 0; j < i; j++) start += exercise.notes[j].durationMs;
-    const end = start + exercise.notes[i].durationMs;
-    return elapsedMs >= start && elapsedMs < end;
-  });
+  const noteIndex = getExpectedNoteIndex(exercise, elapsedMs);
   const barProgress =
-    noteIndex >= 0 ? `${noteIndex + 1} / ${exercise.notes.length}` : `0 / ${exercise.notes.length}`;
+    noteIndex >= 0
+      ? `${noteIndex + 1} / ${exercise.notes.length}`
+      : `0 / ${exercise.notes.length}`;
 
   return {
     exercise,
@@ -151,6 +173,8 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     progress,
     barProgress,
     currentTarget,
+    currentNoteIndex,
+    liveFeedback,
     summary,
     startPractice,
     reset,

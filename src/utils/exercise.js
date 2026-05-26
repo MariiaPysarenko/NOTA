@@ -14,7 +14,7 @@ export const DEMO_EXERCISE = {
   ],
 };
 
-/** Mock OCR: derive a simple exercise from uploaded image bytes */
+/** @deprecated Use services/mockOmr.js + noteModel instead */
 export function mockExerciseFromUpload(fileName = "") {
   const pools = [
     ["C4", "E4", "G4", "C5", "G4"],
@@ -27,6 +27,8 @@ export function mockExerciseFromUpload(fileName = "") {
   const notes = pools[hash % pools.length].map((name) => ({
     name,
     durationMs: 1000,
+    duration: "quarter",
+    measure: 1,
   }));
   return {
     id: "upload-mock",

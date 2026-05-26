@@ -21,11 +21,14 @@ export function frequencyToNoteName(frequency) {
 /**
  * Parse "C4" / "D#4" into MIDI number for comparison.
  */
+const FLAT_TO_SHARP = { Db: "C#", Eb: "D#", Gb: "F#", Ab: "G#", Bb: "A#" };
+
 export function noteNameToMidi(noteName) {
   if (!noteName) return null;
-  const match = noteName.match(/^([A-G]#?)(\d)$/);
+  const match = noteName.match(/^([A-G][#b]?)(\d)$/);
   if (!match) return null;
-  const [, name, octaveStr] = match;
+  let [, name, octaveStr] = match;
+  if (name.includes("b")) name = FLAT_TO_SHARP[name] ?? name;
   const idx = NOTE_NAMES.indexOf(name);
   if (idx < 0) return null;
   return (parseInt(octaveStr, 10) + 1) * 12 + idx;
