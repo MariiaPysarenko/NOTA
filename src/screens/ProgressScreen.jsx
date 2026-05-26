@@ -3,12 +3,15 @@ import GamificationBar from "../components/GamificationBar";
 import PracticeHeatmap from "../components/PracticeHeatmap";
 import AchievementBadge from "../components/AchievementBadge";
 import { levelFromXp, ACHIEVEMENTS } from "../utils/gamification";
+import EmptyState from "../components/EmptyState";
+import { ROUTES } from "../navigation/routes";
 
 export default function ProgressScreen() {
   const gamification = useNotaStore((s) => s.gamification);
   const practiceSessions = useNotaStore((s) => s.practiceSessions);
   const streak = useNotaStore((s) => s.streak);
   const getProgressStats = useNotaStore((s) => s.getProgressStats);
+  const navigate = useNotaStore((s) => s.navigate);
 
   const stats = getProgressStats();
   const { level, progress } = levelFromXp(gamification.totalXp || 0);
@@ -49,14 +52,23 @@ export default function ProgressScreen() {
       <section className="history-section">
         <p className="exercise-label">Recent sessions</p>
         {practiceSessions.length === 0 ? (
-          <p className="muted">Complete a practice session to see history.</p>
+          <EmptyState
+            compact
+            icon="📈"
+            title="No practice history yet"
+            message="Finish a practice session to track accuracy, streaks, and XP here."
+            actionLabel="Start practicing"
+            onAction={() => navigate(ROUTES.PRACTICE)}
+          />
         ) : (
           <ul className="session-list">
             {practiceSessions.slice(0, 8).map((s) => (
               <li key={s.id} className="session-item glass-card">
-                <div>
-                  <strong>{s.pieceTitle || "Practice"}</strong>
-                  <p>{(s.date || "").slice(0, 10)} · {s.instrument}</p>
+                <div className="session-meta">
+                  <strong className="text-clamp-1">{s.pieceTitle || "Practice"}</strong>
+                  <p className="text-clamp-1">
+                    {(s.date || "").slice(0, 10)} · {s.instrument}
+                  </p>
                 </div>
                 <span className="accuracy-pill">{s.accuracy}%</span>
               </li>

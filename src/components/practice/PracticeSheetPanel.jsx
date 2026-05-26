@@ -1,5 +1,6 @@
 import SheetMusicRenderer from "../SheetMusicRenderer";
 import AnnotationLayer from "../AnnotationLayer";
+import EmptyState from "../EmptyState";
 
 export default function PracticeSheetPanel({
   notes,
@@ -12,12 +13,14 @@ export default function PracticeSheetPanel({
   if (!notes.length) {
     return (
       <section className="digital-sheet-card practice-sheet glass-card">
-        <div className="empty-state">
-          <p>Upload sheet music to begin</p>
-          <button type="button" className="secondary small-btn" onClick={onEditNotes}>
-            Go to library
-          </button>
-        </div>
+        <EmptyState
+          compact
+          icon="📄"
+          title="No sheet music loaded"
+          message="Upload or choose a track from the library to see digital notes here."
+          actionLabel="Choose a track"
+          onAction={onEditNotes}
+        />
       </section>
     );
   }

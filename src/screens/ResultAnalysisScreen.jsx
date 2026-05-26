@@ -1,6 +1,7 @@
 import { useNotaStore } from "../store/useNotaStore";
 import { ROUTES } from "../navigation/routes";
 import { exportResultImage, downloadBlob, shareWithTeacher } from "../utils/exportResult";
+import EmptyState from "../components/EmptyState";
 
 function BarChart({ items, labelKey = "label", valueKey = "value", max = 100 }) {
   return (
@@ -36,11 +37,14 @@ export default function ResultAnalysisScreen() {
 
   if (!practiceSummary) {
     return (
-      <main className="screen">
-        <p className="muted">No session data. Start practicing first.</p>
-        <button type="button" className="primary" onClick={() => navigate(ROUTES.PRACTICE)}>
-          Go to Practice
-        </button>
+      <main className="screen result-screen">
+        <EmptyState
+          icon="🎼"
+          title="No session to analyze"
+          message="Complete a practice run to see accuracy breakdown, missed notes, and AI coaching tips."
+          actionLabel="Go to Practice"
+          onAction={() => navigate(ROUTES.PRACTICE)}
+        />
       </main>
     );
   }

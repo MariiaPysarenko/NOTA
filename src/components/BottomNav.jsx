@@ -23,17 +23,25 @@ export default function BottomNav() {
 
   return (
     <nav className="bottom-nav" aria-label="Main navigation">
-      {TABS.map((tab) => (
-        <button
-          key={tab.route}
-          type="button"
-          className={route === tab.route || (tab.route === ROUTES.PRACTICE && route === ROUTES.TRACK_CHOICE) ? "active" : ""}
-          onClick={() => go(tab.route)}
-        >
-          <span aria-hidden>{tab.icon}</span>
-          {tab.label}
-        </button>
-      ))}
+      {TABS.map((tab) => {
+        const active =
+          route === tab.route ||
+          (tab.route === ROUTES.PRACTICE && route === ROUTES.TRACK_CHOICE);
+        return (
+          <button
+            key={tab.route}
+            type="button"
+            className={active ? "active" : ""}
+            onClick={() => go(tab.route)}
+            aria-current={active ? "page" : undefined}
+          >
+            <span className="nav-icon" aria-hidden>
+              {tab.icon}
+            </span>
+            <span className="nav-label">{tab.label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 }

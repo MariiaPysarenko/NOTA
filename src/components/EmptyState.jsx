@@ -1,6 +1,13 @@
-export default function EmptyState({ icon = "♪", title, message, actionLabel, onAction }) {
+export default function EmptyState({
+  icon = "♪",
+  title,
+  message,
+  actionLabel,
+  onAction,
+  compact = false,
+}) {
   return (
-    <div className="empty-state-card glass-card">
+    <div className={`empty-state-card glass-card ${compact ? "empty-state-compact" : ""}`}>
       <span className="empty-icon" aria-hidden>
         {icon}
       </span>

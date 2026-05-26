@@ -3,9 +3,8 @@ import AppShell from "./components/AppShell";
 import IntroSplash from "./components/IntroSplash";
 import OnboardingTutorial from "./components/OnboardingTutorial";
 import AuthLoading from "./components/AuthLoading";
-import BottomNav from "./components/BottomNav";
 import { useNotaStore } from "./store/useNotaStore";
-import { ROUTES, showBottomNav } from "./navigation/routes";
+import { ROUTES } from "./navigation/routes";
 import { isIntroDone, setIntroDone, isOnboardingDone, setOnboardingDone } from "./services/localStore";
 import AuthScreen from "./screens/AuthScreen";
 import InstrumentSelectionScreen from "./screens/InstrumentSelectionScreen";
@@ -88,7 +87,6 @@ function AppRouter() {
           onSkip={() => setOnboardingDone()}
         />
       )}
-      {showBottomNav(route, Boolean(user)) && <BottomNav />}
     </>
   );
 }

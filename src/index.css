@@ -1,17 +1,16 @@
+@import "./ui-tokens.css";
+
 html,
 body,
 #root {
   margin: 0;
   min-height: 100%;
   min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 body {
   background: #030303;
   -webkit-tap-highlight-color: transparent;
-}
-
-:root {
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  text-rendering: optimizeLegibility;
 }

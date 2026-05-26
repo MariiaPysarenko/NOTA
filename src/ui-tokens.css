@@ -1,0 +1,35 @@
+/* NOTA design tokens — typography, spacing, touch targets */
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  --nav-height: 72px;
+  --header-block: 80px;
+
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 14px;
+  --space-lg: 18px;
+  --space-xl: 24px;
+
+  --touch-min: 44px;
+
+  --text-display: clamp(1.75rem, 5vw, 2.125rem);
+  --text-h1: clamp(1.5rem, 4.5vw, 1.875rem);
+  --text-h2: 1.125rem;
+  --text-h3: 1rem;
+  --text-body: 0.9375rem;
+  --text-small: 0.8125rem;
+  --text-caption: 0.6875rem;
+
+  --line-tight: 1.15;
+  --line-body: 1.45;
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+}

@@ -5,6 +5,7 @@ export default function PracticeControls({
   onPauseToggle,
   onStop,
   micError,
+  hasMicrophone = true,
 }) {
   const micLabel = {
     idle: "Start",
@@ -13,9 +14,27 @@ export default function PracticeControls({
     detecting: "Detecting",
   }[micState] || "Mic";
 
+  const permissionDenied =
+    micError &&
+    (micError.toLowerCase().includes("denied") ||
+      micError.toLowerCase().includes("not available") ||
+      !hasMicrophone);
+
   return (
     <section className="practice-controls glass-card">
-      {micError && (
+      {permissionDenied && (
+        <div className="mic-permission-card" role="alert">
+          <p>
+            <strong>Microphone unavailable</strong>
+          </p>
+          <p>
+            Allow microphone access in your browser settings, then tap Start again. You can still
+            review sheet music without live pitch detection.
+          </p>
+        </div>
+      )}
+
+      {micError && !permissionDenied && (
         <p className="mic-error" role="alert">
           {micError}
         </p>
@@ -30,7 +49,7 @@ export default function PracticeControls({
           onClick={onMicToggle}
           aria-label="Microphone"
         >
-          🎤
+          <span aria-hidden>🎤</span>
           <span>{micLabel}</span>
         </button>
 

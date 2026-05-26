@@ -157,10 +157,18 @@ export default function ProfileScreen() {
 
       <section className="share-card-section glass-card">
         <h3>Practice summary card</h3>
-        <p>Export or share your latest session results.</p>
-        <button type="button" className="secondary" onClick={shareCard}>
-          {teacherMode ? "Share with teacher" : "Download practice card"}
-        </button>
+        {lastSession ? (
+          <>
+            <p className="text-clamp-2">
+              Latest: {lastSession.pieceTitle} · {lastSession.accuracy}% accuracy
+            </p>
+            <button type="button" className="secondary" onClick={shareCard}>
+              {teacherMode ? "Share with teacher" : "Download practice card"}
+            </button>
+          </>
+        ) : (
+          <p className="muted">Complete a practice session to generate a shareable card.</p>
+        )}
       </section>
 
       <button type="button" className="secondary" onClick={() => navigate(ROUTES.INSTRUMENT)}>

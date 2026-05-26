@@ -32,8 +32,8 @@ export default function TrackLibraryScreen() {
               <div key={`fav-${track.id}`} className="track-item glass-card">
                 <button type="button" className="track-open" onClick={() => selectTrack(track)}>
                   <div className="track-meta">
-                    <h3>{track.title}</h3>
-                    <p>{track.subtitle}</p>
+                    <h3 className="text-clamp-1">{track.title}</h3>
+                    <p className="text-clamp-2">{track.subtitle}</p>
                   </div>
                   <span className="card-action">→</span>
                 </button>
@@ -54,8 +54,8 @@ export default function TrackLibraryScreen() {
           <div key={track.id} className="track-item glass-card">
             <button type="button" className="track-open" onClick={() => selectTrack(track)}>
               <div className="track-meta">
-                <h3>{track.title}</h3>
-                <p>{track.subtitle}</p>
+                <h3 className="text-clamp-1">{track.title}</h3>
+                <p className="text-clamp-2">{track.subtitle}</p>
                 <span className="track-note-count">{track.notes.length} notes</span>
               </div>
               <span className="card-action">→</span>

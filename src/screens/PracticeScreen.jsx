@@ -171,6 +171,7 @@ export default function PracticeScreen() {
         onPauseToggle={handlePauseToggle}
         onStop={handleStop}
         micError={pitch.error}
+        hasMicrophone={pitch.hasMicrophone}
       />
 
       <div className="practice-toolbar">
