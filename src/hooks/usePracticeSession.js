@@ -141,6 +141,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     setSummary(result);
     setPhase("summary");
     setLiveFeedback("ready");
+    return result;
   }, [exercise, pitch]);
 
   const startPractice = useCallback(async () => {

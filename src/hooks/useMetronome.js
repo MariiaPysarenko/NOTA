@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
-export function useMetronome(initialBpm = 100) {
-  const [bpm, setBpm] = useState(initialBpm);
-  const [isRunning, setIsRunning] = useState(false);
+export function useMetronome(bpm = 100, shouldRun = false) {
   const intervalRef = useRef(null);
   const audioRef = useRef(null);
 
@@ -21,32 +19,23 @@ export function useMetronome(initialBpm = 100) {
     osc.stop(ctx.currentTime + 0.05);
   }, []);
 
-  const start = useCallback(() => {
-    if (intervalRef.current) return;
-    setIsRunning(true);
-    const ms = (60 / bpm) * 1000;
-    tick();
-    intervalRef.current = setInterval(tick, ms);
-  }, [bpm, tick]);
-
   const stop = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = null;
-    setIsRunning(false);
   }, []);
 
-  const toggle = useCallback(() => {
-    if (isRunning) stop();
-    else start();
-  }, [isRunning, start, stop]);
+  const start = useCallback(() => {
+    stop();
+    const ms = (60 / bpm) * 1000;
+    tick();
+    intervalRef.current = setInterval(tick, ms);
+  }, [bpm, tick, stop]);
 
   useEffect(() => {
-    if (!isRunning) return;
-    stop();
-    start();
-  }, [bpm]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (shouldRun) start();
+    else stop();
+    return stop;
+  }, [shouldRun, bpm, start, stop]);
 
-  useEffect(() => () => stop(), [stop]);
-
-  return { bpm, setBpm, isRunning, start, stop, toggle };
+  return { isRunning: shouldRun };
 }
