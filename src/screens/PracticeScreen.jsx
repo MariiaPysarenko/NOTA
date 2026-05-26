@@ -19,8 +19,6 @@ export default function PracticeScreen() {
     annotationsBySheet,
     navigate,
     showToast,
-    focusMode,
-    setFocusMode,
     fullscreenSheet,
     setFullscreenSheet,
     metronomeBpm,
@@ -63,7 +61,7 @@ export default function PracticeScreen() {
 
   const completeSession = async (summary) => {
     const durationSeconds = Math.round(session.elapsedMs / 1000);
-    const { xpEarned, newAchievements: earned } = await recordPracticeSession(summary, {
+    const { newAchievements: earned } = await recordPracticeSession(summary, {
       durationSeconds,
       completedPiece: true,
     });
@@ -103,22 +101,15 @@ export default function PracticeScreen() {
 
   return (
     <main
-      className={`screen practice-screen practice-screen-clean ${focusMode ? "focus-mode" : ""} ${
+      className={`screen practice-screen practice-screen-clean ${
         fullscreenSheet ? "sheet-fullscreen" : ""
       }`}
     >
-      {!focusMode && <GamificationBar />}
+      <GamificationBar />
 
       <section className="practice-header-minimal practice-top">
-        <h2>{pieceMeta.title}</h2>
+        <h2 className="text-clamp-1">{pieceMeta.title}</h2>
         <div className="practice-header-actions">
-          <button
-            type="button"
-            className="secondary small-btn"
-            onClick={() => setFocusMode(!focusMode)}
-          >
-            {focusMode ? "Exit focus" : "Focus"}
-          </button>
           <button
             type="button"
             className="secondary small-btn"
@@ -153,16 +144,14 @@ export default function PracticeScreen() {
         onEditNotes={() => navigate(ROUTES.REVIEW)}
       />
 
-      {!focusMode && (
-        <PracticePitchPanel
-          feedback={feedback}
-          liveFeedback={session.liveFeedback}
-          detectedNote={displayNote}
-          targetNote={targetNote}
-          cents={pitch.cents}
-          accuracy={accuracy}
-        />
-      )}
+      <PracticePitchPanel
+        feedback={feedback}
+        liveFeedback={session.liveFeedback}
+        detectedNote={displayNote}
+        targetNote={targetNote}
+        cents={pitch.cents}
+        accuracy={accuracy}
+      />
 
       <PracticeControls
         micState={pitch.micState}

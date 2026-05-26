@@ -65,7 +65,6 @@ export const useNotaStore = create((set, get) => ({
   gamification: initialGamification(),
   streak: { current: 0, longest: 0 },
   dailyGoalMinutes: 15,
-  focusMode: false,
   fullscreenSheet: false,
   teacherMode: false,
   metronomeBpm: 80,
@@ -205,7 +204,6 @@ export const useNotaStore = create((set, get) => ({
   setPracticeSummary: (summary) => set({ practiceSummary: summary }),
   setAiFeedback: (aiFeedback) => set({ aiFeedback }),
 
-  setFocusMode: (v) => set({ focusMode: v }),
   setFullscreenSheet: (v) => set({ fullscreenSheet: v }),
   setTeacherMode: (v) => {
     set({ teacherMode: v });

@@ -2092,20 +2092,6 @@ button {
   margin-top: 8px;
 }
 
-.focus-mode .practice-top,
-.focus-mode .practice-stats,
-.focus-mode .gamification-bar,
-.focus-mode .piece-row,
-.focus-mode .practice-actions-row,
-.focus-mode .practice-pitch-row,
-.focus-mode .summary-card {
-  display: none;
-}
-
-.focus-mode .pitch-card {
-  margin-top: 0;
-}
-
 .sheet-fullscreen {
   position: fixed;
   inset: 72px 16px 100px;
@@ -3245,15 +3231,6 @@ button {
   -webkit-overflow-scrolling: touch;
 }
 
-.focus-mode .practice-toolbar,
-.focus-mode .gamification-bar {
-  display: none;
-}
-
-.focus-mode .practice-header-actions .small-btn {
-  display: none;
-}
-
 .floating-metronome {
   position: fixed;
   left: 50%;
@@ -3313,6 +3290,243 @@ button {
   margin-bottom: var(--space-md);
 }
 
+/* —— Profile screen —— */
+
+.profile-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.profile-hero {
+  display: grid;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.profile-hero-text h2 {
+  margin: var(--space-sm) 0 4px;
+  font-size: var(--text-h2);
+}
+
+.profile-email {
+  margin: 0;
+  font-size: var(--text-small);
+  color: #888;
+}
+
+.profile-level-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-top: var(--space-sm);
+}
+
+.level-pill {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, #ff5a00, #ff9700);
+  color: #000;
+  font-size: var(--text-caption);
+  font-weight: 700;
+}
+
+.profile-xp {
+  font-size: var(--text-small);
+  color: #ffb468;
+  font-weight: 600;
+}
+
+.profile-level-bar {
+  margin-top: var(--space-xs);
+}
+
+.profile-level-caption {
+  margin: 6px 0 0;
+  font-size: var(--text-caption);
+  color: #888;
+  text-align: center;
+}
+
+.profile-daily {
+  padding: var(--space-md);
+}
+
+.profile-daily-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+  font-size: var(--text-small);
+}
+
+.profile-daily-header strong {
+  color: #ff9b35;
+}
+
+.profile-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+}
+
+.profile-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--touch-min);
+  padding: var(--space-sm) 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 122, 0, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.profile-action-btn span {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.profile-stats {
+  margin: 0;
+}
+
+.profile-section {
+  padding: var(--space-md);
+}
+
+.profile-section-title {
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-h3);
+  font-weight: 600;
+}
+
+.profile-session-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-sm);
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.profile-session-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+  color: white;
+  text-align: left;
+  min-height: var(--touch-min);
+}
+
+.profile-achievements-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.profile-ach-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  opacity: 0.45;
+  text-align: center;
+}
+
+.profile-ach-chip.unlocked {
+  opacity: 1;
+  border-color: rgba(255, 122, 0, 0.4);
+  background: rgba(255, 122, 0, 0.1);
+}
+
+.profile-ach-chip span {
+  font-size: 24px;
+}
+
+.profile-ach-chip small {
+  font-size: 10px;
+  line-height: 1.2;
+  color: #ccc;
+}
+
+.profile-settings label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: var(--space-md);
+  font-size: var(--text-small);
+  color: #aaa;
+}
+
+.profile-settings input[type="text"],
+.profile-settings select {
+  min-height: var(--touch-min);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  color: white;
+  padding: 0 12px;
+  font-size: var(--text-body);
+}
+
+.toggle-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--text-caption);
+  color: #777;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.profile-demo-hint {
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-caption);
+  color: #ffb468;
+  line-height: var(--line-body);
+}
+
+.profile-share-summary {
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-small);
+  line-height: var(--line-body);
+}
+
+.profile-share-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.profile-share-actions .secondary {
+  width: 100%;
+  min-height: var(--touch-min);
+  font-size: var(--text-small);
+  padding: 10px 8px;
+}
+
+.profile-logout {
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
 @media (max-width: 380px) {
   .app {
     padding: 12px;
@@ -3329,5 +3543,13 @@ button {
 
   .practice-controls .mic-btn {
     max-width: 120px;
+  }
+
+  .profile-quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .profile-share-actions {
+    grid-template-columns: 1fr;
   }
 }
