@@ -1,4 +1,4 @@
-import { useApp } from "../context/AppContext";
+import { useApp } from "../store/useNotaStore";
 import { ROUTES } from "../navigation/routes";
 
 export default function TrackChoiceScreen() {

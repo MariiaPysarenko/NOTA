@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../store/useNotaStore";
 import { instruments } from "../instruments";
 import { ROUTES } from "../navigation/routes";
 
 export default function InstrumentSelectionScreen() {
-  const { selectedInstrument, setSelectedInstrument, navigate, showToast, setUser } = useApp();
+  const { selectedInstrument, setSelectedInstrument, navigate, showToast } = useApp();
   const [category, setCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [view, setView] = useState("featured");
@@ -27,7 +27,6 @@ export default function InstrumentSelectionScreen() {
 
   const selectInstrument = (item) => {
     setSelectedInstrument(item);
-    setUser((prev) => (prev ? { ...prev, selected_instrument: item.name } : prev));
     showToast(`${item.name} selected`);
   };
 

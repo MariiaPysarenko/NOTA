@@ -1,19 +1,16 @@
-import { useMemo, useRef, useState } from "react";
-import { useApp } from "../context/AppContext";
+import { useRef, useState } from "react";
+import { useApp } from "../store/useNotaStore";
 import SheetMusicRenderer from "../components/SheetMusicRenderer";
 import { linkAnnotationToMeasure } from "../utils/annotationLinking";
 import { ROUTES } from "../navigation/routes";
 
-const TOOLS = {
-  PEN: "pen",
-  HIGHLIGHTER: "highlighter",
-  ERASER: "eraser",
-};
+const TOOLS = { PEN: "pen", HIGHLIGHTER: "highlighter", ERASER: "eraser" };
+const SHEET_W = 330;
+const SHEET_H = 180;
 
-function makeAnnotation({ points, tool, color, size, userId, sheetId, linked }) {
+function makeAnnotation({ points, tool, color, size, sheetId, linked }) {
   return {
     id: `ann-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    user_id: userId,
     sheet_id: sheetId,
     type: tool,
     color,
@@ -25,31 +22,38 @@ function makeAnnotation({ points, tool, color, size, userId, sheetId, linked }) 
 }
 
 export default function SheetEditorScreen() {
-  const { digitizedNotes, pieceMeta, annotationsBySheet, setAnnotationsForSheet, user, navigate, showToast } =
+  const { digitizedNotes, pieceMeta, annotationsBySheet, setAnnotationsForSheet, navigate, showToast } =
     useApp();
-  const canvasRef = useRef(null);
+  const surfaceRef = useRef(null);
   const [tool, setTool] = useState(TOOLS.PEN);
   const [color, setColor] = useState("#ff7a00");
   const [size, setSize] = useState(3);
   const [zoom, setZoom] = useState(1);
   const [isDrawing, setIsDrawing] = useState(false);
   const [path, setPath] = useState([]);
+  const [history, setHistory] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
+
   const annotations = annotationsBySheet[pieceMeta.id] || [];
 
-  const sheetAnnotations = useMemo(() => annotations, [annotations]);
-
-  const pushAnnotation = (ann) => {
-    setAnnotationsForSheet(pieceMeta.id, [...sheetAnnotations, ann]);
+  const commitHistory = (next) => {
+    setHistory((h) => [...h, annotations]);
+    setAnnotationsForSheet(pieceMeta.id, next);
     setRedoStack([]);
   };
 
+  /** Map pointer to fixed viewBox coordinates (zoom-stable) */
   const getPoint = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect();
-    return { x: (e.clientX - rect.left) / zoom, y: (e.clientY - rect.top) / zoom };
+    const svg = surfaceRef.current;
+    if (!svg) return { x: 0, y: 0 };
+    const rect = svg.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * SHEET_W;
+    const y = ((e.clientY - rect.top) / rect.height) * SHEET_H;
+    return { x, y };
   };
 
   const onPointerDown = (e) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
     setIsDrawing(true);
     setPath([getPoint(e)]);
   };
@@ -62,43 +66,44 @@ export default function SheetEditorScreen() {
   const onPointerUp = () => {
     if (!isDrawing || path.length < 2) {
       setIsDrawing(false);
+      setPath([]);
       return;
     }
-    const linked = linkAnnotationToMeasure({ points: path }, digitizedNotes);
+    const linked = linkAnnotationToMeasure({ points: path }, digitizedNotes, SHEET_W);
     const annotation = makeAnnotation({
       points: path,
       tool,
       color,
       size,
-      userId: user?.id ?? "demo-user",
       sheetId: pieceMeta.id,
       linked,
     });
-    pushAnnotation(annotation);
+    commitHistory([...annotations, annotation]);
     setPath([]);
     setIsDrawing(false);
   };
 
   const undo = () => {
-    if (!sheetAnnotations.length) return;
-    const next = sheetAnnotations.slice(0, -1);
-    setRedoStack((r) => [sheetAnnotations[sheetAnnotations.length - 1], ...r]);
-    setAnnotationsForSheet(pieceMeta.id, next);
+    if (!history.length) return;
+    const prev = history[history.length - 1];
+    setRedoStack((r) => [annotations, ...r]);
+    setHistory((h) => h.slice(0, -1));
+    setAnnotationsForSheet(pieceMeta.id, prev);
   };
 
   const redo = () => {
     if (!redoStack.length) return;
-    const [head, ...rest] = redoStack;
+    const [next, ...rest] = redoStack;
+    setHistory((h) => [...h, annotations]);
     setRedoStack(rest);
-    setAnnotationsForSheet(pieceMeta.id, [...sheetAnnotations, head]);
+    setAnnotationsForSheet(pieceMeta.id, next);
   };
 
   const clearAll = () => {
-    setAnnotationsForSheet(pieceMeta.id, []);
+    commitHistory([]);
+    setHistory([]);
     setRedoStack([]);
   };
-
-  const fitToScreen = () => setZoom(1);
 
   return (
     <main className="screen sheet-editor-screen">
@@ -106,22 +111,26 @@ export default function SheetEditorScreen() {
         <h1>
           Sheet <span>Editor</span>
         </h1>
-        <p>Draw and mark directly on top of the digital sheet.</p>
+        <p>Draw markings aligned to your digital notes.</p>
       </section>
 
-      <section className="digital-sheet-card drawing-surface">
-        <div style={{ transform: `scale(${zoom})`, transformOrigin: "top left" }}>
-          <SheetMusicRenderer notes={digitizedNotes} width={330} height={180} />
+      <section className="digital-sheet-card drawing-surface glass-card">
+        <div
+          className="editor-zoom-surface"
+          style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}
+        >
+          <SheetMusicRenderer notes={digitizedNotes} width={SHEET_W} height={SHEET_H} />
           <svg
-            ref={canvasRef}
+            ref={surfaceRef}
             className="annotation-canvas"
-            viewBox="0 0 330 180"
+            viewBox={`0 0 ${SHEET_W} ${SHEET_H}`}
+            preserveAspectRatio="xMidYMid meet"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerLeave={onPointerUp}
           >
-            {sheetAnnotations.map((ann) => (
+            {annotations.map((ann) => (
               <polyline
                 key={ann.id}
                 points={ann.points.map((p) => `${p.x},${p.y}`).join(" ")}
@@ -148,7 +157,7 @@ export default function SheetEditorScreen() {
         </div>
       </section>
 
-      <section className="editor-tools">
+      <section className="editor-tools glass-card">
         <div className="chips">
           {Object.values(TOOLS).map((t) => (
             <button
@@ -161,7 +170,6 @@ export default function SheetEditorScreen() {
             </button>
           ))}
         </div>
-
         <div className="tool-grid">
           <label>
             Color
@@ -172,7 +180,7 @@ export default function SheetEditorScreen() {
             <input
               type="range"
               min={1}
-              max={16}
+              max={12}
               value={size}
               onChange={(e) => setSize(parseInt(e.target.value, 10))}
             />
@@ -181,15 +189,14 @@ export default function SheetEditorScreen() {
             Zoom
             <input
               type="range"
-              min={0.7}
-              max={2}
-              step={0.1}
+              min={0.8}
+              max={1.6}
+              step={0.05}
               value={zoom}
               onChange={(e) => setZoom(parseFloat(e.target.value))}
             />
           </label>
         </div>
-
         <div className="editor-toolbar">
           <button type="button" className="secondary small-btn" onClick={undo}>
             Undo
@@ -200,7 +207,7 @@ export default function SheetEditorScreen() {
           <button type="button" className="secondary small-btn" onClick={clearAll}>
             Clear
           </button>
-          <button type="button" className="secondary small-btn" onClick={fitToScreen}>
+          <button type="button" className="secondary small-btn" onClick={() => setZoom(1)}>
             Fit
           </button>
         </div>

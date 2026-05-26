@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../store/useNotaStore";
 import { ROUTES } from "../navigation/routes";
 import { digitizeSheetMusic } from "../services/omrApi";
 import DigitizeLoader from "../components/DigitizeLoader";
@@ -78,7 +78,7 @@ export default function UploadDigitizeScreen() {
         <h1>
           Upload <span>Sheet Music</span>
         </h1>
-        <p>Upload an image or PDF. We convert it into structured digital notes.</p>
+        <p>Upload sheet music to begin. We convert it into structured digital notes.</p>
       </section>
 
       <section className="upload-card">

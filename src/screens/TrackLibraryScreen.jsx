@@ -1,10 +1,9 @@
-import { useApp } from "../context/AppContext";
+import { useApp } from "../store/useNotaStore";
 import { LIBRARY_TRACKS } from "../data/libraryTracks";
 import { ROUTES } from "../navigation/routes";
 
 export default function TrackLibraryScreen() {
-  const { setDigitizedNotes, navigate, showToast, setActiveTab, favoriteIds, toggleFavorite } =
-    useApp();
+  const { setDigitizedNotes, navigate, showToast, favoriteIds, toggleFavorite } = useApp();
 
   const selectTrack = (track) => {
     setDigitizedNotes(track.notes, {
@@ -13,7 +12,6 @@ export default function TrackLibraryScreen() {
       subtitle: track.subtitle,
     });
     showToast(`${track.title} loaded`);
-    setActiveTab("practice");
     navigate(ROUTES.REVIEW);
   };
 

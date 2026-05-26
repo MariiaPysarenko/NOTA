@@ -2,7 +2,7 @@ import { useState } from "react";
 import AppShell from "./components/AppShell";
 import IntroSplash from "./components/IntroSplash";
 import OnboardingTutorial from "./components/OnboardingTutorial";
-import { AppProvider, useApp } from "./context/AppContext";
+import { useNotaStore } from "./store/useNotaStore";
 import { ROUTES } from "./navigation/routes";
 import { isIntroDone, setIntroDone, isOnboardingDone, setOnboardingDone } from "./services/localStore";
 import InstrumentSelectionScreen from "./screens/InstrumentSelectionScreen";
@@ -11,31 +11,16 @@ import ReviewEditScreen from "./screens/ReviewEditScreen";
 import TrackChoiceScreen from "./screens/TrackChoiceScreen";
 import TrackLibraryScreen from "./screens/TrackLibraryScreen";
 import UploadDigitizeScreen from "./screens/UploadDigitizeScreen";
-import AuthScreen from "./screens/AuthScreen";
-import ResultAnalysisScreen from "./screens/ResultAnalysisScreen";
-import ProgressScreen from "./screens/ProgressScreen";
-import ProfileScreen from "./screens/ProfileScreen";
 import SheetEditorScreen from "./screens/SheetEditorScreen";
 import "./App.css";
 
 function AppRouter() {
-  const { route, user } = useApp();
+  const route = useNotaStore((s) => s.route);
   const [onboardingStep, setOnboardingStep] = useState(0);
-  const showOnboarding = user && !isOnboardingDone() && route === ROUTES.INSTRUMENT;
-
-  if (!user) {
-    if (route === ROUTES.AUTH_REGISTER) return <AuthScreen mode="register" />;
-    return <AuthScreen mode="login" />;
-  }
+  const showOnboarding = !isOnboardingDone() && route === ROUTES.INSTRUMENT;
 
   let screen;
   switch (route) {
-    case ROUTES.AUTH_LOGIN:
-      screen = <AuthScreen mode="login" />;
-      break;
-    case ROUTES.AUTH_REGISTER:
-      screen = <AuthScreen mode="register" />;
-      break;
     case ROUTES.INSTRUMENT:
       screen = <InstrumentSelectionScreen />;
       break;
@@ -57,17 +42,8 @@ function AppRouter() {
     case ROUTES.SHEET_EDITOR:
       screen = <SheetEditorScreen />;
       break;
-    case ROUTES.RESULT:
-      screen = <ResultAnalysisScreen />;
-      break;
-    case ROUTES.PROGRESS:
-      screen = <ProgressScreen />;
-      break;
-    case ROUTES.PROFILE:
-      screen = <ProfileScreen />;
-      break;
     default:
-      screen = <PracticeScreen />;
+      screen = <InstrumentSelectionScreen />;
   }
 
   return (
@@ -91,7 +67,7 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(!isIntroDone());
 
   return (
-    <AppProvider>
+    <>
       {showIntro && (
         <IntroSplash
           onDone={() => {
@@ -103,6 +79,6 @@ export default function App() {
       <AppShell>
         <AppRouter />
       </AppShell>
-    </AppProvider>
+    </>
   );
 }

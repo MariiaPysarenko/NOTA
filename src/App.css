@@ -23,10 +23,10 @@ button {
 }
 
 .phone {
-  width: 390px;
-  height: 844px;
+  width: min(390px, 100vw - 24px);
+  height: min(844px, 100dvh - 48px);
   border-radius: 42px;
-  padding: 22px;
+  padding: calc(22px + var(--safe-top)) 22px calc(22px + var(--safe-bottom));
   background:
     radial-gradient(circle at 60% 35%, rgba(255, 119, 0, 0.22), transparent 34%),
     linear-gradient(180deg, #050505, #0c0c0c);
@@ -88,6 +88,20 @@ button {
   overflow-x: hidden;
   padding-bottom: 24px;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.screen-body {
+  height: calc(100% - 80px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen-body .screen {
+  flex: 1;
+  height: auto;
+  min-height: 0;
 }
 
 .screen::-webkit-scrollbar {
@@ -2370,4 +2384,173 @@ button {
   background: rgba(255, 122, 0, 0.15);
   color: #ff9b35;
   font-size: 11px;
+}
+
+/* —— MVP cleanup: focused practice + layout —— */
+
+.practice-screen-clean {
+  padding-bottom: 16px;
+}
+
+.practice-header-minimal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.practice-header-minimal h2 {
+  margin: 0;
+  font-size: 16px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pitch-card-minimal {
+  min-height: auto;
+  padding: 16px;
+}
+
+.accuracy-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.accuracy-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.accuracy-value {
+  font-size: 22px;
+  color: #ff7a00;
+}
+
+.live-feedback-label {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+
+.tuner-compact {
+  margin: 8px 0 12px;
+}
+
+.tuner-compact span {
+  height: 18px;
+}
+
+.dual-notes-compact h1 {
+  font-size: 32px;
+}
+
+.practice-controls {
+  padding: 14px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.practice-control-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.practice-controls .mic-btn {
+  flex: 1;
+  max-width: 140px;
+  height: auto;
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 22px;
+  margin: 0;
+}
+
+.practice-controls .mic-btn span {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.control-btn {
+  min-height: 48px;
+  min-width: 72px;
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.mic-error {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #ff6b55;
+  text-align: center;
+}
+
+.summary-compact {
+  padding: 14px;
+}
+
+.empty-state-card {
+  padding: 28px 18px;
+  text-align: center;
+  border-radius: 20px;
+  margin: 12px 0;
+}
+
+.empty-state-card .empty-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.empty-state-card h3 {
+  margin: 0 0 8px;
+}
+
+.empty-state-card p {
+  margin: 0 0 14px;
+  color: #aaa;
+  font-size: 13px;
+}
+
+.editor-zoom-surface {
+  position: relative;
+  width: 330px;
+  margin: 0 auto;
+  transition: transform 0.15s ease;
+}
+
+.sheet-playhead.active {
+  animation: playhead-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes playhead-pulse {
+  from {
+    opacity: 0.7;
+    box-shadow: 0 0 8px rgba(255, 122, 0, 0.5);
+  }
+  to {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(255, 122, 0, 1);
+  }
+}
+
+.note-display.note-green {
+  animation: success-pop 0.25s ease;
+}
+
+@keyframes success-pop {
+  50% {
+    transform: scale(1.06);
+  }
 }

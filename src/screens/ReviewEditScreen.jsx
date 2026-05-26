@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../store/useNotaStore";
 import SheetMusicRenderer from "../components/SheetMusicRenderer";
 import { ROUTES } from "../navigation/routes";
 import { createNote, DURATIONS, PITCHES } from "../utils/noteModel";
@@ -168,9 +168,14 @@ export default function ReviewEditScreen() {
         </div>
       </section>
 
-      <button type="button" className="primary" onClick={goToPractice}>
-        Continue to Practice
-      </button>
+      <div className="buttons">
+        <button type="button" className="primary" onClick={goToPractice}>
+          Continue to Practice
+        </button>
+        <button type="button" className="secondary" onClick={() => navigate(ROUTES.SHEET_EDITOR)}>
+          Edit / Draw markings
+        </button>
+      </div>
     </main>
   );
 }

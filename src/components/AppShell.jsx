@@ -1,24 +1,14 @@
 import { BACK_ROUTE, ROUTES } from "../navigation/routes";
-import { useApp } from "../context/AppContext";
-import BottomNav from "./BottomNav";
-import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
-
-const SWIPE_TABS = new Set([ROUTES.PRACTICE, ROUTES.PROGRESS, ROUTES.LIBRARY, ROUTES.PROFILE]);
+import { useNotaStore } from "../store/useNotaStore";
 
 export default function AppShell({ children }) {
-  const { route, navigate, toast, user, isDemoMode, activeTab, setActiveTab } = useApp();
-
-  useSwipeNavigation({
-    enabled: user && SWIPE_TABS.has(route),
-    activeTab,
-    setActiveTab,
-    navigate,
-    routes: ROUTES,
-  });
+  const route = useNotaStore((s) => s.route);
+  const navigate = useNotaStore((s) => s.navigate);
+  const toast = useNotaStore((s) => s.toast);
   const backRoute = BACK_ROUTE[route];
   const canGoBack = Boolean(backRoute);
 
-  const goHome = () => navigate(user ? ROUTES.PRACTICE : ROUTES.AUTH_LOGIN);
+  const goHome = () => navigate(ROUTES.INSTRUMENT);
   const goBack = () => {
     if (backRoute) navigate(backRoute);
   };
@@ -47,9 +37,7 @@ export default function AppShell({ children }) {
           </button>
         </header>
 
-        {isDemoMode && user && <p className="demo-badge">Demo Mode</p>}
-        <div className="screen-transition">{children}</div>
-        <BottomNav />
+        <div className="screen-transition screen-body">{children}</div>
       </div>
     </div>
   );

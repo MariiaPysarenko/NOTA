@@ -148,6 +148,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     startTimeRef.current = Date.now();
 
     intervalRef.current = setInterval(() => {
+      if (pitch.isPaused) return;
       const now = Date.now() - startTimeRef.current;
       setElapsedMs(now);
       recordSample();
