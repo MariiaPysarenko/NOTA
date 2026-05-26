@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
 const STEPS = [
+  { icon: "🎷", title: "Pick your instrument", text: "Start with Alto Saxophone and grow from there." },
   { icon: "📄", title: "Upload sheet music", text: "We digitize your score into playable notes." },
-  { icon: "🎼", title: "Practice with AI feedback", text: "Real-time pitch and rhythm coaching." },
-  { icon: "🔥", title: "Build your streak", text: "Earn XP, level up, and stay motivated." },
+  { icon: "🎼", title: "Practice with live feedback", text: "Real-time pitch coaching on every note." },
 ];
 
 export default function IntroSplash({ onDone }) {

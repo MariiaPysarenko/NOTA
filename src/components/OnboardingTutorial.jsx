@@ -2,7 +2,7 @@ const STEPS = [
   "Choose Alto Saxophone to start your MVP journey.",
   "Pick a library track or upload your own sheet music.",
   "Review digitized notes, then practice with live feedback.",
-  "Earn XP and keep your daily 15-minute goal streak alive.",
+  "Use the mic to start — pause anytime without losing your place.",
 ];
 
 export default function OnboardingTutorial({ step, onNext, onSkip }) {

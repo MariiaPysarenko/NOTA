@@ -3,6 +3,7 @@ import { useApp } from "../store/useNotaStore";
 import SheetMusicRenderer from "../components/SheetMusicRenderer";
 import { ROUTES } from "../navigation/routes";
 import { createNote, DURATIONS, PITCHES } from "../utils/noteModel";
+import EmptyState from "../components/EmptyState";
 
 export default function ReviewEditScreen() {
   const { digitizedNotes, setDigitizedNotes, pieceMeta, navigate, showToast } = useApp();
@@ -55,6 +56,20 @@ export default function ReviewEditScreen() {
     setDigitizedNotes(editing, pieceMeta);
     navigate(ROUTES.PRACTICE);
   };
+
+  if (!editing.length) {
+    return (
+      <main className="screen review-screen">
+        <EmptyState
+          icon="🎼"
+          title="No notes yet"
+          message="Upload or choose a track to digitize sheet music first."
+          actionLabel="Choose a track"
+          onAction={() => navigate(ROUTES.TRACK_CHOICE)}
+        />
+      </main>
+    );
+  }
 
   return (
     <main className="screen review-screen">

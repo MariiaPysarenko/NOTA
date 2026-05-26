@@ -24,6 +24,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
   const [liveFeedback, setLiveFeedback] = useState("ready");
   const [difficultMeasures, setDifficultMeasures] = useState([]);
+  const [liveAccuracy, setLiveAccuracy] = useState(null);
   const mistakeMeasuresRef = useRef({});
 
   const samplesRef = useRef([]);
@@ -113,6 +114,17 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
       unstable,
       timingOff,
     });
+
+    const played = samplesRef.current.filter((s) => !s.isSilent);
+    if (played.length > 0) {
+      const hits = played.filter(
+        (s) =>
+          s.detectedNote === s.targetNote &&
+          Math.abs(s.cents ?? 99) <= 35 &&
+          !s.timingOff
+      ).length;
+      setLiveAccuracy(Math.round((hits / played.length) * 100));
+    }
   }, [exercise, pitch]);
 
   const finish = useCallback(() => {
@@ -167,6 +179,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     setCurrentNoteIndex(-1);
     setLiveFeedback("ready");
     setDifficultMeasures([]);
+    setLiveAccuracy(null);
     mistakeMeasuresRef.current = {};
     samplesRef.current = [];
   }, [pitch]);
@@ -198,6 +211,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     currentNoteIndex,
     liveFeedback,
     difficultMeasures,
+    liveAccuracy,
     summary,
     startPractice,
     reset,

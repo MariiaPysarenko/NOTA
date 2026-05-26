@@ -37,7 +37,9 @@ export default function AppShell({ children }) {
           </button>
         </header>
 
-        <div className="screen-transition screen-body">{children}</div>
+        <div key={route} className="screen-transition screen-body">
+          {children}
+        </div>
       </div>
     </div>
   );

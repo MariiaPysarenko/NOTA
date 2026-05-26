@@ -3,6 +3,7 @@ import { useApp } from "../store/useNotaStore";
 import { ROUTES } from "../navigation/routes";
 import { digitizeSheetMusic } from "../services/omrApi";
 import DigitizeLoader from "../components/DigitizeLoader";
+import EmptyState from "../components/EmptyState";
 
 const ACCEPT_TYPES = [
   "image/png",
@@ -81,6 +82,16 @@ export default function UploadDigitizeScreen() {
         <p>Upload sheet music to begin. We convert it into structured digital notes.</p>
       </section>
 
+      {status === "idle" && !selectedFile && (
+        <EmptyState
+          icon="📄"
+          title="Upload sheet music to begin"
+          message="PNG, JPG, or PDF — we'll analyze and convert it into digital notes."
+          actionLabel="Choose file"
+          onAction={() => inputRef.current?.click()}
+        />
+      )}
+
       <section className="upload-card">
         <input
           ref={inputRef}
@@ -98,7 +109,9 @@ export default function UploadDigitizeScreen() {
           📄 Choose file (PNG / JPG / PDF)
         </button>
 
-        {status === "processing" && <DigitizeLoader />}
+        {status === "processing" && (
+          <DigitizeLoader message="Analyzing sheet music…" />
+        )}
 
         {error && <p className="upload-error">{error}</p>}
 

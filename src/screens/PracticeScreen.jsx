@@ -31,7 +31,7 @@ export default function PracticeScreen() {
     session.phase === "summary" && session.summary
       ? session.summary.accuracy
       : session.phase === "practicing"
-        ? null
+        ? session.liveAccuracy
         : null;
 
   const handleMicToggle = async () => {
@@ -88,7 +88,7 @@ export default function PracticeScreen() {
         detectedNote={displayNote}
         targetNote={targetNote}
         cents={pitch.cents}
-        accuracy={session.summary?.accuracy ?? accuracy}
+        accuracy={accuracy}
       />
 
       <PracticeControls
