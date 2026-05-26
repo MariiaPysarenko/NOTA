@@ -3513,15 +3513,6 @@ button {
 }
 
 @media (max-width: 380px) {
-  .app {
-    padding: 12px;
-  }
-
-  .phone {
-    width: 100%;
-    border-radius: 32px;
-  }
-
   .hero h1 {
     letter-spacing: -0.8px;
   }
