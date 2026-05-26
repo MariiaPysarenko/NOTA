@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { generatePracticeFeedback } from "../utils/feedback";
+import { exportResultImage, downloadBlob, shareWithTeacher } from "../utils/exportResult";
 import { ROUTES } from "../navigation/routes";
 
 function difficultMeasuresFromSummary(summary) {
+  if (summary?.difficultMeasures?.length) return summary.difficultMeasures;
   if (!summary?.noteResults) return [];
   const set = new Set();
   summary.noteResults.forEach((item, idx) => {
@@ -15,7 +17,16 @@ function difficultMeasuresFromSummary(summary) {
 }
 
 export default function ResultAnalysisScreen() {
-  const { practiceSummary, pieceMeta, annotationsBySheet, pieceMeta: meta, navigate } = useApp();
+  const {
+    practiceSummary,
+    pieceMeta,
+    annotationsBySheet,
+    navigate,
+    selectedInstrument,
+    lastSessionXp,
+    streak,
+    showToast,
+  } = useApp();
   const summary = practiceSummary;
 
   const difficultMeasures = useMemo(
@@ -23,13 +34,34 @@ export default function ResultAnalysisScreen() {
     [summary]
   );
   const ai = useMemo(
-    () =>
-      generatePracticeFeedback({
-        ...summary,
-        difficultMeasures,
-      }),
+    () => generatePracticeFeedback({ ...summary, difficultMeasures }),
     [summary, difficultMeasures]
   );
+
+  const handleExport = async () => {
+    const blob = await exportResultImage({
+      title: pieceMeta.title,
+      accuracy: summary?.accuracy ?? 0,
+      xp: lastSessionXp,
+      streak: streak.current,
+      instrument: selectedInstrument.name,
+    });
+    if (blob) {
+      downloadBlob(blob, `nota-${pieceMeta.id}-result.png`);
+      showToast("Result image saved");
+    }
+  };
+
+  const handleTeacherShare = async () => {
+    const minutes = Math.round((summary?.durationSeconds || 0) / 60);
+    const copied = await shareWithTeacher({
+      title: pieceMeta.title,
+      accuracy: summary?.accuracy ?? 0,
+      minutes: minutes || 1,
+      instrument: selectedInstrument.name,
+    });
+    showToast(copied ? "Shared with teacher" : "Report copied for teacher");
+  };
 
   if (!summary) {
     return (
@@ -47,7 +79,7 @@ export default function ResultAnalysisScreen() {
     );
   }
 
-  const linkedAnnotations = annotationsBySheet[meta.id]?.filter((a) => a.linked_measure) ?? [];
+  const linkedAnnotations = annotationsBySheet[pieceMeta.id]?.filter((a) => a.linked_measure) ?? [];
 
   return (
     <main className="screen">
@@ -58,15 +90,15 @@ export default function ResultAnalysisScreen() {
         <p>{pieceMeta.title}</p>
       </section>
 
-      <section className="summary-card">
+      <section className="summary-card glass-card">
         <div className="summary-grid">
           <div className="summary-stat highlight">
             <b>{summary.accuracy}%</b>
             <span>Accuracy</span>
           </div>
           <div className="summary-stat">
-            <b>{summary.noteResults.length}</b>
-            <span>Total notes</span>
+            <b>+{lastSessionXp}</b>
+            <span>XP earned</span>
           </div>
           <div className="summary-stat">
             <b>{summary.wrongNotes.length}</b>
@@ -78,18 +110,18 @@ export default function ResultAnalysisScreen() {
           </div>
         </div>
 
-        <p className="summary-detail">
-          <strong>Missed notes:</strong> {summary.missedNotes.join(", ") || "None"}
-        </p>
-        <p className="summary-detail">
-          <strong>Rhythm issues:</strong> {summary.timingIssues.join(", ") || "None"}
-        </p>
+        {ai.highlights?.map((line) => (
+          <p key={line} className="coach-bubble">
+            {line}
+          </p>
+        ))}
+
         <p className="summary-detail">
           <strong>Difficult measures:</strong> {difficultMeasures.join(", ") || "None"}
         </p>
       </section>
 
-      <section className="ai-card">
+      <section className="ai-card glass-card">
         <h3>
           AI <span>Coach</span>
         </h3>
@@ -111,6 +143,12 @@ export default function ResultAnalysisScreen() {
       <div className="buttons">
         <button className="primary" type="button" onClick={() => navigate(ROUTES.PRACTICE)}>
           Practice Again
+        </button>
+        <button className="secondary" type="button" onClick={handleExport}>
+          Export image
+        </button>
+        <button className="secondary" type="button" onClick={handleTeacherShare}>
+          Teacher Mode — Share
         </button>
         <button className="secondary" type="button" onClick={() => navigate(ROUTES.PROGRESS)}>
           View Progress

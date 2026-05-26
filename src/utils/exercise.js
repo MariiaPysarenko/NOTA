@@ -72,6 +72,7 @@ export function getMotivationalFeedback(accuracy) {
 export function evaluatePractice(exercise, samples) {
   const noteResults = exercise.notes.map((n) => ({
     expected: n.name,
+    measure: n.measure ?? 1,
     hits: 0,
     attempts: 0,
     wrong: [],

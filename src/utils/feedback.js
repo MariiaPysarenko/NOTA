@@ -27,9 +27,20 @@ export function generatePracticeFeedback(sessionStats) {
         ? "Practice a 5-note scale pattern with quarter notes at 70 BPM."
         : "Try the same piece at +10 BPM and maintain pitch accuracy.";
 
+  const highlights = [];
+  if (accuracy >= 85) highlights.push("Great rhythm");
+  if (difficultMeasures.length > 0) {
+    highlights.push(`Watch measure ${difficultMeasures[0]}`);
+  }
+  if (timingIssues.length > 0 && !highlights.includes(`Watch measure ${difficultMeasures[0]}`)) {
+    highlights.push("Tighten your timing");
+  }
+  if (accuracy >= 90) highlights.push("Excellent pitch control");
+
   return {
     motivational,
     tips: tips.slice(0, 3),
     nextExercise,
+    highlights: highlights.slice(0, 3),
   };
 }

@@ -1890,3 +1890,484 @@ button {
 .avatar-wrap span {
   font-size: 28px;
 }
+
+/* —— Premium polish: glass, gamification, practice UX —— */
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.gamification-bar {
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 18px;
+}
+
+.gamification-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.level-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff5a00, #ff9700);
+  color: #000;
+  font-weight: 700;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.xp-text {
+  color: #ffb468;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.streak-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 122, 0, 0.15);
+  color: #ff9b35;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.level-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.level-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ff5a00, #ff9700);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.daily-goal-text {
+  margin: 0;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.coach-bubble {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 122, 0, 0.12);
+  color: #ffc285;
+  font-size: 12px;
+  text-align: center;
+  animation: fade-slide 0.3s ease;
+}
+
+.mic-glow {
+  animation: mic-pulse 0.6s ease-in-out infinite alternate;
+  box-shadow: 0 0 40px rgba(255, 122, 0, 0.9), 0 0 80px rgba(255, 90, 0, 0.4);
+}
+
+@keyframes mic-pulse {
+  from {
+    box-shadow: 0 0 28px rgba(255, 122, 0, 0.6);
+  }
+  to {
+    box-shadow: 0 0 55px rgba(255, 122, 0, 1), 0 0 90px rgba(255, 90, 0, 0.5);
+  }
+}
+
+.sheet-with-playhead {
+  position: relative;
+}
+
+.sheet-playhead {
+  position: absolute;
+  top: 8px;
+  width: 3px;
+  height: calc(100% - 16px);
+  background: #ff7a00;
+  border-radius: 4px;
+  box-shadow: 0 0 16px rgba(255, 122, 0, 0.9);
+  pointer-events: none;
+  transition: left 0.12s linear;
+  opacity: 0.35;
+}
+
+.sheet-playhead.active {
+  opacity: 1;
+}
+
+.repeat-fragment-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.focus-mode .practice-top,
+.focus-mode .practice-stats,
+.focus-mode .gamification-bar,
+.focus-mode .piece-row,
+.focus-mode .practice-actions-row,
+.focus-mode .practice-pitch-row,
+.focus-mode .summary-card {
+  display: none;
+}
+
+.focus-mode .pitch-card {
+  margin-top: 0;
+}
+
+.sheet-fullscreen {
+  position: fixed;
+  inset: 72px 16px 100px;
+  z-index: 40;
+  overflow: auto;
+}
+
+.floating-metronome {
+  position: absolute;
+  right: 24px;
+  bottom: 96px;
+  z-index: 30;
+  width: calc(100% - 48px);
+  max-width: 320px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 8px;
+  align-items: center;
+  border-radius: 16px;
+  animation: fade-slide 0.25s ease;
+}
+
+.metro-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: linear-gradient(90deg, #ff5a00, #ff9700);
+  color: white;
+  font-size: 18px;
+}
+
+.floating-metronome p {
+  margin: 0;
+  font-size: 10px;
+  color: #aaa;
+}
+
+.floating-metronome b {
+  font-size: 14px;
+}
+
+.floating-metronome input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: #ff7a00;
+}
+
+.digitize-loader {
+  padding: 24px;
+  text-align: center;
+  margin-top: 12px;
+}
+
+.loader-orbit {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 14px;
+  animation: spin 2s linear infinite;
+}
+
+.loader-note {
+  position: absolute;
+  font-size: 22px;
+  color: #ff7a00;
+}
+
+.loader-note:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.loader-note.delay-1 {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.loader-note.delay-2 {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loader-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.loader-bar-fill {
+  display: block;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, #ff5a00, #ff9700);
+  animation: loader-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes loader-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(29, 13, 4, 0.95), rgba(3, 3, 3, 0.98));
+  padding: 24px;
+}
+
+.intro-card {
+  width: min(390px, 100%);
+  padding: 28px 22px;
+  text-align: center;
+  border-radius: 28px;
+}
+
+.intro-brand {
+  font-size: 28px;
+  margin: 0 0 16px;
+  letter-spacing: -1px;
+}
+
+.intro-brand span {
+  color: #ff7a00;
+}
+
+.intro-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  animation: fade-slide 0.5s ease;
+}
+
+.intro-card h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.intro-card p {
+  margin: 0 0 16px;
+  color: #b5b5b5;
+  font-size: 14px;
+}
+
+.intro-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.intro-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.intro-dots span.active {
+  background: #ff7a00;
+}
+
+.onboarding-tip {
+  position: fixed;
+  left: 50%;
+  bottom: 100px;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 340px;
+  z-index: 60;
+  padding: 14px;
+}
+
+.heatmap-card {
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 18px;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: #ff7a00;
+}
+
+.timeline-card {
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 18px;
+}
+
+.timeline-list {
+  display: grid;
+  gap: 8px;
+}
+
+.timeline-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.timeline-item h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.timeline-item p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #888;
+}
+
+.timeline-item b {
+  color: #ff7a00;
+}
+
+.badges-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.badge-chip {
+  padding: 10px 6px;
+  border-radius: 14px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0.45;
+}
+
+.badge-chip.unlocked {
+  opacity: 1;
+  border-color: rgba(255, 122, 0, 0.45);
+  background: rgba(255, 122, 0, 0.1);
+}
+
+.badge-chip span {
+  font-size: 22px;
+  display: block;
+}
+
+.badge-chip small {
+  font-size: 9px;
+  color: #ccc;
+}
+
+.achievement-badge {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  animation: fade-slide 0.35s ease;
+}
+
+.achievement-badge span {
+  font-size: 28px;
+}
+
+.achievement-badge b {
+  display: block;
+  color: #ff9b35;
+}
+
+.achievement-badge p {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #aaa;
+}
+
+.track-item.glass-card {
+  display: grid;
+  grid-template-columns: 1fr 36px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.track-open {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: white;
+  text-align: left;
+  padding: 8px;
+}
+
+.fav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  color: #888;
+  font-size: 18px;
+}
+
+.fav-btn.active {
+  color: #ff7a00;
+  border-color: rgba(255, 122, 0, 0.5);
+}
+
+.inline-chip {
+  border: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 122, 0, 0.15);
+  color: #ff9b35;
+  font-size: 11px;
+}

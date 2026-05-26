@@ -2,9 +2,12 @@ import { useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { logout } from "../services/authService";
 import { ROUTES } from "../navigation/routes";
+import { levelFromXp, ACHIEVEMENTS } from "../utils/gamification";
 
 export default function ProfileScreen() {
-  const { user, setUser, selectedInstrument, practiceSessions, navigate, showToast } = useApp();
+  const { user, setUser, selectedInstrument, practiceSessions, navigate, showToast, gamification, streak } =
+    useApp();
+  const { level } = levelFromXp(gamification.totalXp || 0);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || "");
   const [name, setName] = useState(user?.name || "Musician");
 
@@ -74,20 +77,34 @@ export default function ProfileScreen() {
         </label>
       </section>
 
-      <section className="stats">
+      <section className="stats glass-card">
         <div>
-          <b>{aggregates.totalMinutes}m</b>
-          <span>Total practice</span>
+          <b>Lv {level}</b>
+          <span>Level</span>
+        </div>
+        <div>
+          <b>🔥 {streak.current}</b>
+          <span>Streak</span>
         </div>
         <div>
           <b>{aggregates.avgAccuracy}%</b>
-          <span>Average accuracy</span>
-        </div>
-        <div>
-          <b>{practiceSessions.length}</b>
-          <span>Sessions</span>
+          <span>Accuracy</span>
         </div>
       </section>
+
+      <div className="badges-row">
+        {Object.values(ACHIEVEMENTS).map((badge) => (
+          <div
+            key={badge.id}
+            className={`badge-chip ${
+              (gamification.unlockedAchievements || []).includes(badge.id) ? "unlocked" : ""
+            }`}
+          >
+            <span>{badge.icon}</span>
+            <small>{badge.title}</small>
+          </div>
+        ))}
+      </div>
 
       <div className="buttons">
         <button type="button" className="primary" onClick={onSaveProfile}>

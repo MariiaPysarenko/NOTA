@@ -2,6 +2,10 @@ const KEYS = {
   USER: "nota_user",
   SESSIONS: "nota_sessions",
   ANNOTATIONS: "nota_annotations",
+  GAMIFICATION: "nota_gamification",
+  FAVORITES: "nota_favorites",
+  ONBOARDING: "nota_onboarding_done",
+  INTRO: "nota_intro_done",
 };
 
 function readJson(key, fallback) {
@@ -43,4 +47,36 @@ export function getLocalAnnotations() {
 
 export function setLocalAnnotations(annotationsBySheet) {
   writeJson(KEYS.ANNOTATIONS, annotationsBySheet);
+}
+
+export function getGamification() {
+  return readJson(KEYS.GAMIFICATION, null);
+}
+
+export function setGamification(state) {
+  writeJson(KEYS.GAMIFICATION, state);
+}
+
+export function getFavorites() {
+  return readJson(KEYS.FAVORITES, []);
+}
+
+export function setFavorites(ids) {
+  writeJson(KEYS.FAVORITES, ids);
+}
+
+export function isOnboardingDone() {
+  return localStorage.getItem(KEYS.ONBOARDING) === "1";
+}
+
+export function setOnboardingDone() {
+  localStorage.setItem(KEYS.ONBOARDING, "1");
+}
+
+export function isIntroDone() {
+  return localStorage.getItem(KEYS.INTRO) === "1";
+}
+
+export function setIntroDone() {
+  localStorage.setItem(KEYS.INTRO, "1");
 }

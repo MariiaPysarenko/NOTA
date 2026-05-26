@@ -8,10 +8,22 @@ import { getInitialAuthState } from "../services/authService";
 import {
   getLocalAnnotations,
   getLocalSessions,
+  getGamification,
   setLocalAnnotations,
   setLocalSessions,
+  setGamification,
+  getFavorites,
+  setFavorites,
 } from "../services/localStore";
 import { isDemoMode } from "../services/supabaseClient";
+import {
+  DEFAULT_GAMIFICATION,
+  DAILY_GOAL_MINUTES,
+  computeStreak,
+  minutesPracticedToday,
+  xpForSession,
+  checkNewAchievements,
+} from "../utils/gamification";
 
 const AppContext = createContext(null);
 
@@ -31,6 +43,15 @@ export function AppProvider({ children }) {
   const [practiceSummary, setPracticeSummary] = useState(null);
   const [practiceSessions, setPracticeSessionsState] = useState(getLocalSessions());
   const [annotationsBySheet, setAnnotationsBySheetState] = useState(getLocalAnnotations());
+  const [gamification, setGamificationState] = useState(
+    () => getGamification() || DEFAULT_GAMIFICATION
+  );
+  const [favoriteIds, setFavoriteIds] = useState(getFavorites());
+  const [focusMode, setFocusMode] = useState(false);
+  const [fullscreenSheet, setFullscreenSheet] = useState(false);
+  const [fragmentRange, setFragmentRange] = useState(null);
+  const [lastSessionXp, setLastSessionXp] = useState(0);
+  const [newAchievements, setNewAchievements] = useState([]);
   const [toast, setToast] = useState("");
 
   const showToast = useCallback((message) => {
@@ -71,6 +92,58 @@ export function AppProvider({ children }) {
     });
   }, []);
 
+  const persistGamification = useCallback((next) => {
+    setGamificationState(next);
+    if (isDemoMode) setGamification(next);
+  }, []);
+
+  const recordSessionRewards = useCallback((sessionPayload) => {
+    const xp = xpForSession(sessionPayload);
+    const today = new Date().toISOString().slice(0, 10);
+    const practiceDays = gamification.practiceDays?.includes(today)
+      ? gamification.practiceDays
+      : [...(gamification.practiceDays || []), today];
+
+    const streak = computeStreak(practiceDays);
+    const nextGamification = {
+      ...gamification,
+      totalXp: (gamification.totalXp || 0) + xp,
+      practiceDays,
+      streak,
+    };
+
+    const { newAchievements: unlocked, unlockedAchievements } = checkNewAchievements(
+      nextGamification,
+      sessionPayload
+    );
+    nextGamification.unlockedAchievements = unlockedAchievements;
+
+    persistGamification(nextGamification);
+    setLastSessionXp(xp);
+    setNewAchievements(unlocked);
+    return { xp, unlocked };
+  }, [gamification, persistGamification]);
+
+  const toggleFavorite = useCallback((trackId) => {
+    setFavoriteIds((prev) => {
+      const next = prev.includes(trackId)
+        ? prev.filter((id) => id !== trackId)
+        : [...prev, trackId];
+      setFavorites(next);
+      return next;
+    });
+  }, []);
+
+  const streak = useMemo(
+    () => computeStreak(gamification.practiceDays || []),
+    [gamification.practiceDays]
+  );
+
+  const dailyMinutes = useMemo(
+    () => minutesPracticedToday(practiceSessions),
+    [practiceSessions]
+  );
+
   const exercise = useMemo(() => {
     if (digitizedNotes.length > 0) {
       return notesToExercise(digitizedNotes, pieceMeta);
@@ -101,6 +174,22 @@ export function AppProvider({ children }) {
       setPracticeSessions,
       annotationsBySheet,
       setAnnotationsForSheet,
+      gamification,
+      streak,
+      dailyMinutes,
+      dailyGoalMinutes: DAILY_GOAL_MINUTES,
+      recordSessionRewards,
+      lastSessionXp,
+      newAchievements,
+      setNewAchievements,
+      favoriteIds,
+      toggleFavorite,
+      focusMode,
+      setFocusMode,
+      fullscreenSheet,
+      setFullscreenSheet,
+      fragmentRange,
+      setFragmentRange,
       toast,
       showToast,
       isDemoMode,
@@ -121,6 +210,17 @@ export function AppProvider({ children }) {
       setPracticeSessions,
       annotationsBySheet,
       setAnnotationsForSheet,
+      gamification,
+      streak,
+      dailyMinutes,
+      recordSessionRewards,
+      lastSessionXp,
+      newAchievements,
+      favoriteIds,
+      toggleFavorite,
+      focusMode,
+      fullscreenSheet,
+      fragmentRange,
       toast,
       showToast,
     ]

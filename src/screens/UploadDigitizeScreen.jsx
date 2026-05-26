@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { ROUTES } from "../navigation/routes";
 import { digitizeSheetMusic } from "../services/omrApi";
+import DigitizeLoader from "../components/DigitizeLoader";
 
 const ACCEPT_TYPES = [
   "image/png",
@@ -97,12 +98,7 @@ export default function UploadDigitizeScreen() {
           📄 Choose file (PNG / JPG / PDF)
         </button>
 
-        {status === "processing" && (
-          <p className="upload-status" role="status">
-            <span className="upload-status-icon">✦</span>
-            Digitizing sheet music…
-          </p>
-        )}
+        {status === "processing" && <DigitizeLoader />}
 
         {error && <p className="upload-error">{error}</p>}
 

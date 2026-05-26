@@ -23,6 +23,8 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
   const [currentConcertTarget, setCurrentConcertTarget] = useState(null);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
   const [liveFeedback, setLiveFeedback] = useState("ready");
+  const [difficultMeasures, setDifficultMeasures] = useState([]);
+  const mistakeMeasuresRef = useRef({});
 
   const samplesRef = useRef([]);
   const centsHistoryRef = useRef([]);
@@ -81,6 +83,11 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
       if (offset < 100 || offset > expectedDur * 0.85) timingOff = true;
     }
 
+    const measure = expected.measure ?? 1;
+    if (!isSilent && (detected !== targetConcert || timingOff)) {
+      mistakeMeasuresRef.current[measure] = (mistakeMeasuresRef.current[measure] || 0) + 1;
+    }
+
     // Real-time feedback
     if (isSilent) {
       if (pauseStartRef.current == null) pauseStartRef.current = now;
@@ -113,6 +120,12 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     intervalRef.current = null;
     pitch.stop();
     const result = evaluatePractice(exercise, samplesRef.current);
+    const hard = Object.entries(mistakeMeasuresRef.current)
+      .filter(([, count]) => count >= 2)
+      .map(([m]) => parseInt(m, 10))
+      .sort((a, b) => a - b);
+    result.difficultMeasures = hard;
+    setDifficultMeasures(hard);
     setSummary(result);
     setPhase("summary");
     setLiveFeedback("ready");
@@ -123,6 +136,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     centsHistoryRef.current = [];
     noteWindowRef.current = { index: -1, enteredAt: 0 };
     pauseStartRef.current = null;
+    mistakeMeasuresRef.current = {};
     setSummary(null);
     setElapsedMs(0);
 
@@ -151,6 +165,8 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     setCurrentConcertTarget(null);
     setCurrentNoteIndex(-1);
     setLiveFeedback("ready");
+    setDifficultMeasures([]);
+    mistakeMeasuresRef.current = {};
     samplesRef.current = [];
   }, [pitch]);
 
@@ -180,6 +196,7 @@ export function usePracticeSession({ pitch, exercise: initialExercise }) {
     currentConcertTarget,
     currentNoteIndex,
     liveFeedback,
+    difficultMeasures,
     summary,
     startPractice,
     reset,

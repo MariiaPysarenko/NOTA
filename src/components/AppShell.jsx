@@ -1,9 +1,20 @@
 import { BACK_ROUTE, ROUTES } from "../navigation/routes";
 import { useApp } from "../context/AppContext";
 import BottomNav from "./BottomNav";
+import { useSwipeNavigation } from "../hooks/useSwipeNavigation";
+
+const SWIPE_TABS = new Set([ROUTES.PRACTICE, ROUTES.PROGRESS, ROUTES.LIBRARY, ROUTES.PROFILE]);
 
 export default function AppShell({ children }) {
-  const { route, navigate, toast, user, isDemoMode } = useApp();
+  const { route, navigate, toast, user, isDemoMode, activeTab, setActiveTab } = useApp();
+
+  useSwipeNavigation({
+    enabled: user && SWIPE_TABS.has(route),
+    activeTab,
+    setActiveTab,
+    navigate,
+    routes: ROUTES,
+  });
   const backRoute = BACK_ROUTE[route];
   const canGoBack = Boolean(backRoute);
 

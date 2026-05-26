@@ -12,22 +12,20 @@ const DURATION_VF = {
 function pitchToVexKey(pitch) {
   const m = pitch.match(/^([A-G][#b]?)(\d)$/);
   if (!m) return "c/4";
-  let name = m[1].toLowerCase();
-  if (name.includes("b")) name = name.replace("b", "b");
-  return `${name}/${m[2]}`;
+  return `${m[1].toLowerCase()}/${m[2]}`;
 }
 
-/**
- * Renders structured notes as digital sheet music (VexFlow SVG).
- */
 export default function SheetMusicRenderer({
   notes = [],
   activeNoteId = null,
+  difficultMeasures = [],
+  progress = 0,
   width = 340,
   height = 150,
   className = "",
 }) {
   const containerRef = useRef(null);
+  const difficultSet = new Set(difficultMeasures);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -47,13 +45,17 @@ export default function SheetMusicRenderer({
     stave.setContext(ctx).draw();
 
     const tickables = notes.map((n) => {
+      const isDifficult = difficultSet.has(n.measure);
+      const isActive = n.id === activeNoteId;
       const sn = new StaveNote({
         clef: "treble",
         keys: [pitchToVexKey(n.pitch)],
         duration: DURATION_VF[n.duration] || "q",
       });
-      if (n.id === activeNoteId) {
+      if (isActive) {
         sn.setStyle({ fillStyle: "#ff7a00", strokeStyle: "#ff9700" });
+      } else if (isDifficult) {
+        sn.setStyle({ fillStyle: "#ff3f24", strokeStyle: "#ff6b55" });
       }
       return sn;
     });
@@ -79,11 +81,13 @@ export default function SheetMusicRenderer({
         try {
           sn.draw();
         } catch {
-          /* skip invalid tickables */
+          /* skip */
         }
       });
     }
-  }, [notes, activeNoteId, width, height]);
+  }, [notes, activeNoteId, difficultMeasures, width, height]);
+
+  const playheadLeft = `${12 + progress * (width - 40)}px`;
 
   if (notes.length === 0) {
     return (
@@ -94,8 +98,12 @@ export default function SheetMusicRenderer({
   }
 
   return (
-    <div className={`vexflow-wrap ${className}`}>
+    <div className={`vexflow-wrap sheet-with-playhead ${className}`}>
       <div ref={containerRef} className="vexflow-container" aria-label="Digital sheet music" />
+      <div
+        className={`sheet-playhead ${progress > 0 ? "active" : ""}`}
+        style={{ left: playheadLeft }}
+      />
     </div>
   );
 }
