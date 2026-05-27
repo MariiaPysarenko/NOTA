@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 const STEPS = [
   { icon: "🎷", title: "Pick your instrument", text: "Personalize practice for your instrument." },
-  { icon: "📄", title: "Upload sheet music", text: "We digitize your score into playable notes." },
+  { icon: "📄", title: "Upload sheet music", text: "Practice on your real sheet and annotate it." },
   { icon: "🔥", title: "Track your progress", text: "Earn XP, build streaks, and unlock achievements." },
 ];
 

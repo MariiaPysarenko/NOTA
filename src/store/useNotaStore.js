@@ -13,6 +13,8 @@ import {
   getFavorites,
   setFavorites,
   setLocalSessions,
+  getLocalSheetAssets,
+  setLocalSheetAssets,
 } from "../services/localStore";
 import {
   initAuthSession,
@@ -70,6 +72,7 @@ export const useNotaStore = create((set, get) => ({
   digitizedNotes: [],
   uploadPreview: null,
   annotationsBySheet: getLocalAnnotations(),
+  sheetAssetsById: getLocalSheetAssets(),
   practiceSessions: getLocalSessions(),
   practiceSummary: null,
   lastPracticeResult: null,
@@ -261,6 +264,14 @@ export const useNotaStore = create((set, get) => ({
   },
 
   setUploadPreview: (url) => set({ uploadPreview: url }),
+
+  setSheetAsset: (sheetId, asset) => {
+    set((s) => {
+      const next = { ...s.sheetAssetsById, [sheetId]: asset };
+      setLocalSheetAssets(next);
+      return { sheetAssetsById: next };
+    });
+  },
 
   setAnnotationsForSheet: (sheetId, annotations) => {
     set((s) => {

@@ -9,7 +9,7 @@ const SLIDES = [
   {
     icon: "📄",
     title: "Upload sheet music",
-    text: "Import PNG, JPG, or PDF — we digitize your score into playable notes.",
+    text: "Import PNG, JPG, or PDF and annotate directly on your real score.",
   },
   {
     icon: "🎤",

@@ -15,6 +15,7 @@ export default function PracticeScreen() {
     digitizedNotes,
     pieceMeta,
     annotationsBySheet,
+    sheetAssetsById,
     navigate,
     showToast,
     metronomeBpm,
@@ -30,12 +31,14 @@ export default function PracticeScreen() {
   } = useApp();
 
   const [showMetro, setShowMetro] = useState(false);
+  const [showAnnotations, setShowAnnotations] = useState(true);
   const finishingRef = useRef(false);
   const pitch = usePitchDetector();
   const session = usePracticeSession({ pitch, exercise });
   const metro = useMetronome(metronomeBpm, metronomeRunning && showMetro);
 
   const sheetAnnotations = annotationsBySheet[pieceMeta.id] || [];
+  const sheetAsset = sheetAssetsById[pieceMeta.id] || null;
 
   const activeNoteId = useMemo(() => {
     if (session.phase !== "practicing" || session.currentNoteIndex < 0) return null;
@@ -114,10 +117,12 @@ export default function PracticeScreen() {
 
       <PracticeSheetHero
         notes={digitizedNotes}
+        sheetAsset={sheetAsset}
         annotations={sheetAnnotations}
         activeNoteId={activeNoteId}
         difficultMeasures={session.difficultMeasures}
         progress={progressRatio}
+        showAnnotations={showAnnotations}
         autoScroll={session.phase === "practicing"}
         onChooseTrack={() => navigate(ROUTES.TRACK_CHOICE)}
       />
@@ -137,6 +142,13 @@ export default function PracticeScreen() {
       </footer>
 
       <footer className="practice-v2-bottom">
+        <button
+          type="button"
+          className="secondary practice-bottom-btn"
+          onClick={() => setShowAnnotations((v) => !v)}
+        >
+          {showAnnotations ? "Hide notes" : "Show notes"}
+        </button>
         <button type="button" className="secondary practice-bottom-btn" onClick={toggleMetro}>
           {showMetro ? "Hide metro" : "Metronome"}
         </button>

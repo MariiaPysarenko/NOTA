@@ -1,16 +1,18 @@
 import SheetMusicRenderer from "../SheetMusicRenderer";
 import AnnotationLayer from "../AnnotationLayer";
+import SheetImageViewer from "../SheetImageViewer";
 import EmptyState from "../EmptyState";
 
 export default function PracticeSheetPanel({
   notes,
+  sheetAsset = null,
   annotations,
   activeNoteId,
   difficultMeasures,
   progress,
   onEditNotes,
 }) {
-  if (!notes.length) {
+  if (!notes.length && !sheetAsset?.dataUrl) {
     return (
       <section className="digital-sheet-card practice-sheet glass-card">
         <EmptyState
@@ -28,15 +30,21 @@ export default function PracticeSheetPanel({
   return (
     <section className="digital-sheet-card practice-sheet glass-card">
       <div className="sheet-layer-wrap">
-        <SheetMusicRenderer
-          notes={notes}
-          activeNoteId={activeNoteId}
-          difficultMeasures={difficultMeasures}
-          progress={progress}
-          width={330}
-          measuresPerLine={2}
-        />
-        <AnnotationLayer annotations={annotations} />
+        {sheetAsset?.dataUrl ? (
+          <SheetImageViewer asset={sheetAsset} annotations={annotations} showAnnotations />
+        ) : (
+          <>
+            <SheetMusicRenderer
+              notes={notes}
+              activeNoteId={activeNoteId}
+              difficultMeasures={difficultMeasures}
+              progress={progress}
+              width={330}
+              measuresPerLine={2}
+            />
+            <AnnotationLayer annotations={annotations} />
+          </>
+        )}
       </div>
     </section>
   );

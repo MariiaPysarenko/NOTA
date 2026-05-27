@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import {
+  Accidental,
   BarlineType,
   Beam,
   Formatter,
@@ -19,12 +20,12 @@ const DURATION_VF = {
 
 const BEATS = { whole: 4, half: 2, quarter: 1, eighth: 0.5, sixteenth: 0.25 };
 
-const STAVE_TOP = 22;
-const STAVE_BLOCK_HEIGHT = 118;
-const SYSTEM_GAP = 38;
-const STAVE_LEFT = 6;
-const MIN_MEASURE_WIDTH = 80;
-const STAVE_LINE_SPACING = 11;
+const STAVE_TOP = 30;
+const STAVE_BLOCK_HEIGHT = 146;
+const SYSTEM_GAP = 56;
+const STAVE_LEFT = 8;
+const MIN_MEASURE_WIDTH = 108;
+const STAVE_LINE_SPACING = 13;
 
 function pitchToVexKey(pitch) {
   const m = pitch.match(/^([A-G][#b]?)(\d)$/);
@@ -64,11 +65,20 @@ function resolveMeasuresPerLine(width, requested) {
 function createTickable(note, { difficultSet, activeNoteId }) {
   const isDifficult = difficultSet.has(note.measure);
   const isActive = note.id === activeNoteId;
+  const pitchMatch = note.pitch?.match(/^([A-G])([#b]?)(\d)$/);
+  const accidental = pitchMatch?.[2] || "";
   const sn = new StaveNote({
     clef: "treble",
     keys: [pitchToVexKey(note.pitch)],
-    duration: DURATION_VF[note.duration] || "q",
+    duration: note.isRest ? `${DURATION_VF[note.duration] || "q"}r` : DURATION_VF[note.duration] || "q",
+  }).setStyle({
+    fillStyle: "#ffffff",
+    strokeStyle: "#ffffff",
+    shadowColor: "transparent",
   });
+  if (!note.isRest && accidental) {
+    sn.addModifier(new Accidental(accidental), 0);
+  }
   if (isActive) {
     sn.setStyle({
       fillStyle: "#ff7a00",
@@ -79,6 +89,16 @@ function createTickable(note, { difficultSet, activeNoteId }) {
     sn.setStyle({ fillStyle: "#ff3f24", strokeStyle: "#ff6b55" });
   }
   return sn;
+}
+
+function measureComplexityWeight(measureNotes = [], isFirst = false) {
+  if (!measureNotes.length) return 1 + (isFirst ? 0.35 : 0);
+  const beats = measureNotes.reduce((sum, n) => sum + (BEATS[n.duration] ?? 1), 0);
+  const densePenalty = measureNotes.reduce((sum, n) => {
+    const d = BEATS[n.duration] ?? 1;
+    return sum + (d <= 0.5 ? 0.45 : d <= 1 ? 0.2 : 0);
+  }, 0);
+  return beats * 0.58 + measureNotes.length * 0.44 + densePenalty + (isFirst ? 0.55 : 0);
 }
 
 function drawMeasure(ctx, measureNotes, x, y, measureWidth, options) {
@@ -110,7 +130,7 @@ function drawMeasure(ctx, measureNotes, x, y, measureWidth, options) {
   voice.setMode(Voice.Mode.SOFT);
   voice.addTickables(tickables);
 
-  const formatter = new Formatter({ softmaxFactor: 8, maxIterations: 12 });
+  const formatter = new Formatter({ softmaxFactor: 28, maxIterations: 18 });
   formatter.joinVoices([voice]).formatToStave([voice], stave, { stave, context: ctx });
   voice.setContext(ctx).setStave(stave).drawWithStyle();
 
@@ -162,18 +182,24 @@ export default function SheetMusicRenderer({
     const renderer = new Renderer(el, Renderer.Backends.SVG);
     renderer.resize(width, totalHeight);
     const ctx = renderer.getContext();
-    ctx.setFillStyle("#e8e8e8");
-    ctx.setStrokeStyle("#e8e8e8");
+    ctx.setFillStyle("#ffffff");
+    ctx.setStrokeStyle("#ffffff");
 
     systems.forEach((lineMeasures, lineIndex) => {
       const y = STAVE_TOP + lineIndex * systemStep;
       const firstMeasure = lineMeasures[0]?.[0]?.measure ?? lineIndex * measuresPerLine + 1;
       const measureCount = lineMeasures.length;
-      const measureWidth = contentWidth / measureCount;
+      const availableWidth = contentWidth - measureCount * 2;
+      const widthPool = Math.max(availableWidth - MIN_MEASURE_WIDTH * measureCount, 0);
+      const weights = lineMeasures.map((measureNotes, mi) =>
+        measureComplexityWeight(measureNotes, lineIndex === 0 && mi === 0)
+      );
+      const weightSum = weights.reduce((sum, w) => sum + w, 0) || 1;
 
       let x = STAVE_LEFT;
       lineMeasures.forEach((measureNotes, mi) => {
         const isFirst = lineIndex === 0 && mi === 0;
+        const measureWidth = MIN_MEASURE_WIDTH + (weights[mi] / weightSum) * widthPool;
         const w = drawMeasure(ctx, measureNotes, x, y, measureWidth, {
           difficultSet,
           activeNoteId,
@@ -200,7 +226,7 @@ export default function SheetMusicRenderer({
       systemRow.style.top = `${y}px`;
       systemRow.style.left = "0";
       systemRow.style.width = "1px";
-      systemRow.style.height = `${STAVE_BLOCK_HEIGHT}px`;
+      systemRow.style.height = `${STAVE_BLOCK_HEIGHT + 12}px`;
       systemRow.style.pointerEvents = "none";
       el.appendChild(systemRow);
     });

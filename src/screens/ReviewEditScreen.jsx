@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { useApp } from "../store/useNotaStore";
 import SheetMusicRenderer from "../components/SheetMusicRenderer";
+import SheetImageViewer from "../components/SheetImageViewer";
 import { ROUTES } from "../navigation/routes";
 import { createNote, DURATIONS, PITCHES } from "../utils/noteModel";
 import EmptyState from "../components/EmptyState";
 
 export default function ReviewEditScreen() {
-  const { digitizedNotes, setDigitizedNotes, pieceMeta, navigate, showToast } = useApp();
+  const { digitizedNotes, setDigitizedNotes, pieceMeta, sheetAssetsById, navigate, showToast } = useApp();
   const [selectedId, setSelectedId] = useState(digitizedNotes[0]?.id ?? null);
   const [editing, setEditing] = useState(digitizedNotes);
+  const activeSheetAsset = sheetAssetsById[pieceMeta.id] || null;
 
   useEffect(() => {
     setEditing(digitizedNotes);
@@ -57,13 +59,13 @@ export default function ReviewEditScreen() {
     navigate(ROUTES.PRACTICE);
   };
 
-  if (!editing.length) {
+  if (!editing.length && !activeSheetAsset?.dataUrl) {
     return (
       <main className="screen review-screen">
         <EmptyState
           icon="🎼"
           title="No notes yet"
-          message="Upload or choose a track to digitize sheet music first."
+          message="Upload or choose a track to load sheet music first."
           actionLabel="Choose a track"
           onAction={() => navigate(ROUTES.TRACK_CHOICE)}
         />
@@ -81,17 +83,27 @@ export default function ReviewEditScreen() {
       </section>
 
       <section className="digital-sheet-card review-sheet-card">
-        <p className="exercise-label">Digital sheet music</p>
-        <SheetMusicRenderer
-          notes={editing}
-          activeNoteId={selectedId}
-          scrollToNoteId={selectedId}
-          width={330}
-          measuresPerLine={4}
-        />
+        <p className="exercise-label">{activeSheetAsset?.dataUrl ? "Uploaded sheet" : "Digital sheet music"}</p>
+        {activeSheetAsset?.dataUrl ? (
+          <SheetImageViewer
+            asset={activeSheetAsset}
+            annotations={[]}
+            showAnnotations={false}
+            className="review-uploaded-sheet"
+          />
+        ) : (
+          <SheetMusicRenderer
+            notes={editing}
+            activeNoteId={selectedId}
+            scrollToNoteId={selectedId}
+            width={330}
+            measuresPerLine={4}
+          />
+        )}
       </section>
 
-      <section className="note-editor">
+      {!activeSheetAsset?.dataUrl && (
+        <section className="note-editor">
         <div className="editor-toolbar">
           <button type="button" className="secondary small-btn" onClick={addNote}>
             + Add note
@@ -182,7 +194,8 @@ export default function ReviewEditScreen() {
             </button>
           ))}
         </div>
-      </section>
+        </section>
+      )}
 
       <div className="buttons">
         <button type="button" className="primary" onClick={goToPractice}>

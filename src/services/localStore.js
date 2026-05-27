@@ -11,6 +11,7 @@ const KEYS = {
   FIRST_PRACTICE: "nota_has_completed_first_practice",
   REGISTRATION_PROMPT: "nota_has_seen_registration_prompt",
   DEMO_TRIAL: "nota_demo_trial_active",
+  SHEET_ASSETS: "nota_sheet_assets",
 };
 
 function readJson(key, fallback) {
@@ -52,6 +53,14 @@ export function getLocalAnnotations() {
 
 export function setLocalAnnotations(annotationsBySheet) {
   writeJson(KEYS.ANNOTATIONS, annotationsBySheet);
+}
+
+export function getLocalSheetAssets() {
+  return readJson(KEYS.SHEET_ASSETS, {});
+}
+
+export function setLocalSheetAssets(sheetAssetsById) {
+  writeJson(KEYS.SHEET_ASSETS, sheetAssetsById);
 }
 
 export function getGamification() {

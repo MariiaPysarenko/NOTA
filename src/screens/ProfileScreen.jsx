@@ -38,6 +38,7 @@ export default function ProfileScreen() {
   const selectedInstrument = useNotaStore((s) => s.selectedInstrument);
   const setSelectedInstrument = useNotaStore((s) => s.setSelectedInstrument);
   const digitizedNotes = useNotaStore((s) => s.digitizedNotes);
+  const sheetAssetsById = useNotaStore((s) => s.sheetAssetsById);
   const pieceMeta = useNotaStore((s) => s.pieceMeta);
 
   const fileRef = useRef(null);
@@ -117,7 +118,8 @@ export default function ProfileScreen() {
   };
 
   const goPractice = () => {
-    if (!digitizedNotes.length) {
+    const hasUploadedSheet = Boolean(sheetAssetsById[pieceMeta.id]?.dataUrl);
+    if (!digitizedNotes.length && !hasUploadedSheet) {
       navigate(ROUTES.TRACK_CHOICE);
       showToast("Choose a track to practice");
       return;

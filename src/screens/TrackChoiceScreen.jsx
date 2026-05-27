@@ -11,11 +11,13 @@ export default function TrackChoiceScreen() {
     practiceSessions,
     pieceMeta,
     digitizedNotes,
+    sheetAssetsById,
   } = useApp();
 
   const { level, progress } = levelFromXp(gamification.totalXp || 0);
   const dailyMinutes = minutesPracticedToday(practiceSessions);
-  const hasPiece = digitizedNotes.length > 0;
+  const activeSheetAsset = sheetAssetsById[pieceMeta.id];
+  const hasPiece = digitizedNotes.length > 0 || Boolean(activeSheetAsset?.dataUrl);
 
   return (
     <main className="screen practice-home">
@@ -62,7 +64,11 @@ export default function TrackChoiceScreen() {
           <div className="choice-icon">🎤</div>
           <div>
             <h3>Continue: {pieceMeta.title}</h3>
-            <p>{digitizedNotes.length} notes ready — jump back into practice</p>
+            <p>
+              {activeSheetAsset?.dataUrl
+                ? "Uploaded sheet ready — jump back into practice"
+                : `${digitizedNotes.length} notes ready — jump back into practice`}
+            </p>
           </div>
           <span className="card-action">→</span>
         </button>
@@ -81,7 +87,7 @@ export default function TrackChoiceScreen() {
         <div className="choice-icon">📄</div>
         <div>
           <h3>Upload sheet music</h3>
-          <p>PNG, JPG, or PDF — digitize into playable notes</p>
+          <p>PNG, JPG, or PDF — use your real sheet with annotations</p>
         </div>
         <span className="card-action">→</span>
       </button>
