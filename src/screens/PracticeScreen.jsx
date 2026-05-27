@@ -37,10 +37,10 @@ export default function PracticeScreen() {
   const sheetAnnotations = annotationsBySheet[pieceMeta.id] || [];
 
   const activeNoteId = useMemo(() => {
-    if (session.currentNoteIndex < 0) return null;
+    if (session.phase !== "practicing" || session.currentNoteIndex < 0) return null;
     const note = exercise.notes[session.currentNoteIndex];
     return note?.id ?? digitizedNotes[session.currentNoteIndex]?.id ?? null;
-  }, [session.currentNoteIndex, exercise.notes, digitizedNotes]);
+  }, [session.phase, session.currentNoteIndex, exercise.notes, digitizedNotes]);
 
   const targetNote = session.currentTarget ?? exercise.notes[0]?.writtenName ?? "—";
   const displayNote = session.phase === "practicing" ? pitch.detectedNote || "—" : "—";

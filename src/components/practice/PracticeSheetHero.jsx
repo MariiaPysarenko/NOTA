@@ -38,12 +38,6 @@ export default function PracticeSheetHero({
           className="sheet-hero-renderer"
         />
         <AnnotationLayer annotations={annotations} />
-        {progress > 0 && (
-          <div
-            className="sheet-playhead active"
-            style={{ left: `${Math.min(98, progress * 100)}%` }}
-          />
-        )}
       </div>
     </section>
   );

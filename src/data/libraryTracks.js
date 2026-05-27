@@ -1,4 +1,7 @@
-import { createNote } from "../utils/noteModel";
+import { AUTUMN_LEAVES_NOTES } from "./melodies/autumnLeaves";
+import { BLUE_BOSSA_NOTES } from "./melodies/blueBossa";
+import { SUMMERTIME_NOTES } from "./melodies/summertime";
+import { WARMUP_SCALE_NOTES } from "./melodies/warmupScale";
 
 /** Pre-digitized library tracks (structured notes, not images) */
 export const LIBRARY_TRACKS = [
@@ -6,49 +9,24 @@ export const LIBRARY_TRACKS = [
     id: "autumn-leaves",
     title: "Autumn Leaves",
     subtitle: "Jazz standard · Easy",
-    notes: [
-      createNote({ pitch: "G4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "C5", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "E5", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "G5", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "F5", duration: "half", measure: 2 }),
-      createNote({ pitch: "E5", duration: "half", measure: 2 }),
-    ],
+    notes: AUTUMN_LEAVES_NOTES,
   },
   {
     id: "blue-bossa",
     title: "Blue Bossa",
     subtitle: "Latin jazz · Medium",
-    notes: [
-      createNote({ pitch: "C4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "E4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "G4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "Bb4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "A4", duration: "half", measure: 2 }),
-    ],
+    notes: BLUE_BOSSA_NOTES,
   },
   {
     id: "summertime",
     title: "Summertime",
     subtitle: "Blues · Beginner",
-    notes: [
-      createNote({ pitch: "E4", duration: "half", measure: 1 }),
-      createNote({ pitch: "G4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "A4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "B4", duration: "half", measure: 2 }),
-      createNote({ pitch: "C5", duration: "half", measure: 2 }),
-    ],
+    notes: SUMMERTIME_NOTES,
   },
   {
     id: "warmup-scale",
     title: "C Major Warm-up",
-    subtitle: "Technique · 5 notes",
-    notes: [
-      createNote({ pitch: "C4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "D4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "E4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "F4", duration: "quarter", measure: 1 }),
-      createNote({ pitch: "G4", duration: "quarter", measure: 1 }),
-    ],
+    subtitle: "Technique · Full scale",
+    notes: WARMUP_SCALE_NOTES,
   },
 ];

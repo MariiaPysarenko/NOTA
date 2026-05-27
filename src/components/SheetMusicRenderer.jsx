@@ -87,6 +87,7 @@ export default function SheetMusicRenderer({
     }
   }, [notes, activeNoteId, difficultMeasures, width, height]);
 
+  const showPlayhead = progress > 0 && !activeNoteId;
   const playheadLeft = `${12 + progress * (width - 40)}px`;
 
   if (notes.length === 0) {
@@ -100,10 +101,9 @@ export default function SheetMusicRenderer({
   return (
     <div className={`vexflow-wrap sheet-with-playhead ${className}`}>
       <div ref={containerRef} className="vexflow-container" aria-label="Digital sheet music" />
-      <div
-        className={`sheet-playhead ${progress > 0 ? "active" : ""}`}
-        style={{ left: playheadLeft }}
-      />
+      {showPlayhead && (
+        <div className="sheet-playhead active" style={{ left: playheadLeft }} />
+      )}
     </div>
   );
 }
