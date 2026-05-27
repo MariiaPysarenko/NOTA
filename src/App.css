@@ -3584,19 +3584,50 @@ button {
   margin: auto;
 }
 
-.onboarding-flow {
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: calc(24px + var(--safe-top)) 20px calc(24px + var(--safe-bottom));
-  background: radial-gradient(circle at 50% 20%, rgba(255, 119, 0, 0.18), #030303 55%);
+.phone-onboarding .phone-content,
+.phone-auth .phone-content {
+  min-height: 0;
 }
 
-.onboarding-flow-card {
-  width: min(390px, 100%);
-  padding: 28px 22px;
+.logo-static {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: white;
+  pointer-events: none;
+}
+
+.logo-static span {
+  color: #ff7a00;
+}
+
+.phone-onboarding .onboarding-flow {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+.phone-onboarding .onboarding-flow-card {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px 18px;
   text-align: center;
-  border-radius: 28px;
+  border-radius: var(--radius-lg);
+  margin: 0;
 }
 
 .onboarding-brand {

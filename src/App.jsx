@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AppShell from "./components/AppShell";
 import OnboardingFlow from "./components/OnboardingFlow";
+import PhoneFrame from "./components/PhoneFrame";
 import AuthLoading from "./components/AuthLoading";
 import { useNotaStore } from "./store/useNotaStore";
 import { ROUTES } from "./navigation/routes";
@@ -75,24 +76,22 @@ export default function App() {
 
   if (!isPreAuthOnboardingDone()) {
     return (
-      <div className="app app-standalone">
+      <PhoneFrame className="phone-onboarding">
         <OnboardingFlow
           onComplete={() => {
             setPreAuthOnboardingDone();
             bump((n) => n + 1);
           }}
         />
-      </div>
+      </PhoneFrame>
     );
   }
 
   if (!user) {
     return (
-      <div className="app app-standalone">
-        <div className="phone phone-auth">
-          <AppRouter />
-        </div>
-      </div>
+      <PhoneFrame className="phone-auth">
+        <AppRouter />
+      </PhoneFrame>
     );
   }
 

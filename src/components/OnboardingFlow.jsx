@@ -34,7 +34,7 @@ export default function OnboardingFlow({ onComplete }) {
   const isLast = step >= SLIDES.length - 1;
 
   return (
-    <div className="onboarding-flow">
+    <div className="onboarding-flow screen">
       <div className="onboarding-flow-card glass-card">
         <p className="onboarding-brand">
           NOT<span>A</span>
