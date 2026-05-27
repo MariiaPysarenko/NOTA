@@ -8,6 +8,9 @@ const KEYS = {
   SETUP_COMPLETE: "nota_setup_complete",
   ONBOARDING: "nota_onboarding_done",
   INTRO: "nota_intro_done",
+  FIRST_PRACTICE: "nota_has_completed_first_practice",
+  REGISTRATION_PROMPT: "nota_has_seen_registration_prompt",
+  DEMO_TRIAL: "nota_demo_trial_active",
 };
 
 function readJson(key, fallback) {
@@ -104,4 +107,31 @@ export function isIntroDone() {
 
 export function setIntroDone() {
   localStorage.setItem(KEYS.INTRO, "1");
+}
+
+export function hasCompletedFirstPractice() {
+  return localStorage.getItem(KEYS.FIRST_PRACTICE) === "1";
+}
+
+export function setHasCompletedFirstPractice(value = true) {
+  if (value) localStorage.setItem(KEYS.FIRST_PRACTICE, "1");
+  else localStorage.removeItem(KEYS.FIRST_PRACTICE);
+}
+
+export function hasSeenRegistrationPrompt() {
+  return localStorage.getItem(KEYS.REGISTRATION_PROMPT) === "1";
+}
+
+export function setHasSeenRegistrationPrompt(value = true) {
+  if (value) localStorage.setItem(KEYS.REGISTRATION_PROMPT, "1");
+  else localStorage.removeItem(KEYS.REGISTRATION_PROMPT);
+}
+
+export function isDemoTrialActive() {
+  return localStorage.getItem(KEYS.DEMO_TRIAL) === "1";
+}
+
+export function setDemoTrialActive(value = true) {
+  if (value) localStorage.setItem(KEYS.DEMO_TRIAL, "1");
+  else localStorage.removeItem(KEYS.DEMO_TRIAL);
 }

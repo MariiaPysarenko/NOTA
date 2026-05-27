@@ -1,6 +1,8 @@
-import { BACK_ROUTE, ROUTES, showBottomNav } from "../navigation/routes";
+import { AUTH_ROUTES, BACK_ROUTE, ROUTES, showBottomNav } from "../navigation/routes";
 import { useNotaStore } from "../store/useNotaStore";
 import { isDemoMode } from "../services/supabaseClient";
+import { isDemoTrialActive } from "../services/localStore";
+import { canUseMainApp } from "../utils/userFlow";
 import BottomNav from "./BottomNav";
 
 export default function AppShell({ children }) {
@@ -10,11 +12,19 @@ export default function AppShell({ children }) {
   const user = useNotaStore((s) => s.user);
   const teacherMode = useNotaStore((s) => s.teacherMode);
   const authReady = useNotaStore((s) => s.authReady);
-  const backRoute = BACK_ROUTE[route];
+  const authReturnRoute = useNotaStore((s) => s.authReturnRoute);
+  const pricingReturnRoute = useNotaStore((s) => s.pricingReturnRoute);
+  const appAccess = canUseMainApp({ user });
+  const backRoute = AUTH_ROUTES.includes(route)
+    ? authReturnRoute
+    : route === ROUTES.PRICING
+      ? pricingReturnRoute
+      : BACK_ROUTE[route];
   const canGoBack = Boolean(backRoute) && route !== ROUTES.PROGRESS && route !== ROUTES.PROFILE;
-  const hasNav = authReady && user && showBottomNav(route, true);
+  const hasNav = authReady && showBottomNav(route, appAccess);
+  const showDemoBadge = isDemoMode && (user || isDemoTrialActive() || !user);
 
-  const goHome = () => navigate(user ? ROUTES.TRACK_CHOICE : ROUTES.AUTH_LOGIN);
+  const goHome = () => navigate(appAccess ? ROUTES.TRACK_CHOICE : ROUTES.INSTRUMENT);
   const goBack = () => {
     if (backRoute) navigate(backRoute);
   };
@@ -24,7 +34,7 @@ export default function AppShell({ children }) {
       <div className={`phone ${hasNav ? "has-bottom-nav" : ""}`}>
         {toast && <div className="toast">{toast}</div>}
 
-        {isDemoMode && user && <div className="demo-badge">Demo mode</div>}
+        {showDemoBadge && <div className="demo-badge">Demo mode</div>}
 
         <div className="status">
           <span>9:41</span>

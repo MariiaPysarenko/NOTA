@@ -20,17 +20,22 @@ import SheetEditorScreen from "./screens/SheetEditorScreen";
 import ProgressScreen from "./screens/ProgressScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import ResultAnalysisScreen from "./screens/ResultAnalysisScreen";
+import RegistrationPromptScreen from "./screens/RegistrationPromptScreen";
+import PricingScreen from "./screens/PricingScreen";
 import "./App.css";
 
 function AppRouter() {
   const route = useNotaStore((s) => s.route);
 
-  if (!useNotaStore((s) => s.user)) {
-    if (route === ROUTES.AUTH_REGISTER) return <AuthScreen mode="register" />;
-    return <AuthScreen mode="login" />;
-  }
-
   switch (route) {
+    case ROUTES.AUTH_LOGIN:
+      return <AuthScreen mode="login" />;
+    case ROUTES.AUTH_REGISTER:
+      return <AuthScreen mode="register" />;
+    case ROUTES.REGISTRATION_PROMPT:
+      return <RegistrationPromptScreen />;
+    case ROUTES.PRICING:
+      return <PricingScreen />;
     case ROUTES.INSTRUMENT:
       return <InstrumentSelectionScreen />;
     case ROUTES.TRACK_CHOICE:
@@ -59,7 +64,6 @@ function AppRouter() {
 export default function App() {
   const initApp = useNotaStore((s) => s.initApp);
   const authReady = useNotaStore((s) => s.authReady);
-  const user = useNotaStore((s) => s.user);
   const [, bump] = useState(0);
 
   useEffect(() => {
@@ -83,14 +87,6 @@ export default function App() {
             bump((n) => n + 1);
           }}
         />
-      </PhoneFrame>
-    );
-  }
-
-  if (!user) {
-    return (
-      <PhoneFrame className="phone-auth">
-        <AppRouter />
       </PhoneFrame>
     );
   }

@@ -2,6 +2,8 @@
 export const ROUTES = {
   AUTH_LOGIN: "auth-login",
   AUTH_REGISTER: "auth-register",
+  REGISTRATION_PROMPT: "registration-prompt",
+  PRICING: "pricing",
   INSTRUMENT: "instrument",
   TRACK_CHOICE: "track-choice",
   LIBRARY: "library",
@@ -23,6 +25,8 @@ export const TAB_ROUTES = [
 
 export const AUTH_ROUTES = [ROUTES.AUTH_LOGIN, ROUTES.AUTH_REGISTER];
 
+export const FLOW_ROUTES = [ROUTES.REGISTRATION_PROMPT, ROUTES.PRICING];
+
 export const BACK_ROUTE = {
   [ROUTES.INSTRUMENT]: null,
   [ROUTES.LIBRARY]: ROUTES.TRACK_CHOICE,
@@ -36,11 +40,14 @@ export const BACK_ROUTE = {
   [ROUTES.RESULT]: ROUTES.PRACTICE,
   [ROUTES.AUTH_LOGIN]: null,
   [ROUTES.AUTH_REGISTER]: ROUTES.AUTH_LOGIN,
+  [ROUTES.REGISTRATION_PROMPT]: ROUTES.RESULT,
+  [ROUTES.PRICING]: ROUTES.PROFILE,
 };
 
-export function showBottomNav(route, isAuthenticated) {
-  if (!isAuthenticated) return false;
+export function showBottomNav(route, canUseApp) {
+  if (!canUseApp) return false;
   if (AUTH_ROUTES.includes(route)) return false;
+  if (FLOW_ROUTES.includes(route)) return false;
   if (route === ROUTES.INSTRUMENT) return false;
   return (
     TAB_ROUTES.includes(route) ||

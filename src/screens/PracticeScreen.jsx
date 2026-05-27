@@ -22,6 +22,7 @@ export default function PracticeScreen() {
     metronomeRunning,
     setMetronomeRunning,
     recordPracticeSession,
+    finishPracticeNavigation,
     streak,
     gamification,
     retryMeasures,
@@ -55,9 +56,9 @@ export default function PracticeScreen() {
       const durationSeconds = Math.max(1, Math.round(session.elapsedMs / 1000));
       await recordPracticeSession(summary, { durationSeconds, completedPiece: true });
       showToast("Session complete");
-      navigate(ROUTES.RESULT);
+      finishPracticeNavigation();
     },
-    [recordPracticeSession, navigate, showToast, session.elapsedMs, setMetronomeRunning]
+    [recordPracticeSession, finishPracticeNavigation, showToast, session.elapsedMs, setMetronomeRunning]
   );
 
   useEffect(() => {

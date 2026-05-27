@@ -28,6 +28,9 @@ export default function ProfileScreen() {
   const setTeacherMode = useNotaStore((s) => s.setTeacherMode);
   const updateProfile = useNotaStore((s) => s.updateProfile);
   const logoutStore = useNotaStore((s) => s.logout);
+  const openAuth = useNotaStore((s) => s.openAuth);
+  const openPricing = useNotaStore((s) => s.openPricing);
+  const continueAsGuest = useNotaStore((s) => s.continueAsGuest);
   const navigate = useNotaStore((s) => s.navigate);
   const showToast = useNotaStore((s) => s.showToast);
   const getProgressStats = useNotaStore((s) => s.getProgressStats);
@@ -52,6 +55,10 @@ export default function ProfileScreen() {
 
   const handleAvatar = (file) => {
     if (!file) return;
+    if (!user) {
+      openAuth("register", ROUTES.PROFILE);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const url = reader.result;
@@ -63,6 +70,10 @@ export default function ProfileScreen() {
   };
 
   const saveProfile = async () => {
+    if (!user) {
+      openAuth("register", ROUTES.PROFILE);
+      return;
+    }
     setSaving(true);
     try {
       await updateProfile({
@@ -141,8 +152,12 @@ export default function ProfileScreen() {
         />
 
         <div className="profile-hero-text">
-          <h2 className="text-clamp-1">{displayName || user?.displayName || "Musician"}</h2>
-          <p className="profile-email text-clamp-1">{user?.email}</p>
+          <h2 className="text-clamp-1">
+            {displayName || user?.displayName || (user ? "Musician" : "Guest musician")}
+          </h2>
+          <p className="profile-email text-clamp-1">
+            {user?.email || "Sign in to sync progress across devices"}
+          </p>
           <div className="profile-level-row">
             <span className="level-pill">Level {level}</span>
             <span className="profile-xp">{gamification.totalXp || 0} XP</span>
@@ -264,8 +279,39 @@ export default function ProfileScreen() {
         </div>
       </section>
 
+      {!user && (
+        <section className="profile-section glass-card profile-guest-cta">
+          <h3 className="profile-section-title">Save your progress</h3>
+          <p className="muted">
+            Create an account to keep XP, streaks, AI feedback, and session history.
+          </p>
+          <div className="profile-guest-actions">
+            <button
+              type="button"
+              className="primary"
+              onClick={() => openAuth("register", ROUTES.PROFILE)}
+            >
+              Create account
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => openAuth("login", ROUTES.PROFILE)}
+            >
+              Sign in
+            </button>
+            <button type="button" className="link-btn" onClick={() => openPricing(ROUTES.PROFILE)}>
+              View plans & pricing
+            </button>
+            <button type="button" className="link-btn muted-link" onClick={continueAsGuest}>
+              Continue demo
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className="profile-section glass-card profile-settings">
-        <h3 className="profile-section-title">Account</h3>
+        <h3 className="profile-section-title">{user ? "Account" : "Preferences"}</h3>
 
         <label>
           Display name
@@ -311,8 +357,14 @@ export default function ProfileScreen() {
         )}
 
         <button type="button" className="primary" onClick={saveProfile} disabled={saving}>
-          {saving ? "Saving…" : "Save changes"}
+          {saving ? "Saving…" : user ? "Save changes" : "Sign in to save"}
         </button>
+
+        {user && (
+          <button type="button" className="link-btn" onClick={() => openPricing(ROUTES.PROFILE)}>
+            Plans & pricing →
+          </button>
+        )}
       </section>
 
       <section className="profile-section glass-card">
@@ -341,9 +393,11 @@ export default function ProfileScreen() {
         )}
       </section>
 
-      <button type="button" className="link-btn danger-text profile-logout" onClick={handleLogout}>
-        Log out
-      </button>
+      {user ? (
+        <button type="button" className="link-btn danger-text profile-logout" onClick={handleLogout}>
+          Log out
+        </button>
+      ) : null}
     </main>
   );
 }

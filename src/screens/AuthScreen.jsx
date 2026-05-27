@@ -7,6 +7,7 @@ export default function AuthScreen({ mode = "login" }) {
   const login = useNotaStore((s) => s.login);
   const register = useNotaStore((s) => s.register);
   const navigate = useNotaStore((s) => s.navigate);
+  const authReturnRoute = useNotaStore((s) => s.authReturnRoute);
   const showToast = useNotaStore((s) => s.showToast);
 
   const [email, setEmail] = useState("");
@@ -37,6 +38,15 @@ export default function AuthScreen({ mode = "login" }) {
   return (
     <main className="screen auth-screen">
       <div className="auth-screen-inner" key={mode}>
+        {authReturnRoute && (
+          <button
+            type="button"
+            className="auth-back link-btn"
+            onClick={() => navigate(authReturnRoute)}
+          >
+            ‹ Back
+          </button>
+        )}
         <header className="auth-hero">
           <p className="auth-brand">
             NOT<span>A</span>

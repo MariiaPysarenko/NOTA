@@ -12,6 +12,7 @@ import {
   setGamification,
   getFavorites,
   setFavorites,
+  setLocalSessions,
 } from "../services/localStore";
 import {
   initAuthSession,
@@ -40,19 +41,29 @@ import {
   todayKey,
 } from "../utils/gamification";
 import { generatePracticeFeedback } from "../utils/aiFeedback";
-import { getPostAuthRoute } from "../utils/userFlow";
-import { setSetupComplete } from "../services/localStore";
+import { getPostAuthRoute, getGuestEntryRoute } from "../utils/userFlow";
+import {
+  setSetupComplete,
+  hasCompletedFirstPractice,
+  setHasCompletedFirstPractice,
+  hasSeenRegistrationPrompt,
+  setHasSeenRegistrationPrompt,
+  setDemoTrialActive,
+  isDemoTrialActive,
+} from "../services/localStore";
 
 let toastTimer;
 
 const initialGamification = () => loadGamificationLocal() || { ...DEFAULT_GAMIFICATION };
 
 export const useNotaStore = create((set, get) => ({
-  route: ROUTES.AUTH_LOGIN,
+  route: ROUTES.INSTRUMENT,
   toast: "",
   authReady: false,
   user: null,
   isDemoMode,
+  authReturnRoute: ROUTES.TRACK_CHOICE,
+  pricingReturnRoute: ROUTES.PROFILE,
 
   selectedInstrument: instruments[0],
   pieceMeta: { id: "demo", title: "Your Piece", subtitle: "" },
@@ -96,7 +107,7 @@ export const useNotaStore = create((set, get) => ({
         practiceSessions: sessions,
         gamification: g,
         streak,
-        route: user ? getPostAuthRoute() : ROUTES.AUTH_LOGIN,
+        route: user ? getPostAuthRoute() : getGuestEntryRoute(),
         teacherMode: user?.teacherMode || false,
       });
 
@@ -105,13 +116,71 @@ export const useNotaStore = create((set, get) => ({
           if (nextUser) {
             set({ user: nextUser, teacherMode: nextUser.teacherMode });
           } else {
-            set({ user: null, route: ROUTES.AUTH_LOGIN });
+            set({ user: null, route: getGuestEntryRoute() });
           }
         });
       }
     } catch {
-      set({ authReady: true, route: ROUTES.AUTH_LOGIN });
+      set({ authReady: true, route: getGuestEntryRoute() });
     }
+  },
+
+  openAuth: (mode, returnRoute = ROUTES.TRACK_CHOICE) => {
+    set({
+      authReturnRoute: returnRoute,
+      route: mode === "register" ? ROUTES.AUTH_REGISTER : ROUTES.AUTH_LOGIN,
+    });
+  },
+
+  openPricing: (returnRoute = ROUTES.PROFILE) => {
+    set({ pricingReturnRoute: returnRoute, route: ROUTES.PRICING });
+  },
+
+  continueAsGuest: () => {
+    setDemoTrialActive(true);
+    setHasSeenRegistrationPrompt(true);
+    const { practiceSummary, route } = get();
+    if (practiceSummary && route === ROUTES.REGISTRATION_PROMPT) {
+      set({ route: ROUTES.RESULT });
+      return;
+    }
+    if (route === ROUTES.REGISTRATION_PROMPT || route === ROUTES.PRICING) {
+      set({ route: getGuestEntryRoute() });
+      return;
+    }
+    get().showToast("Demo mode — progress saved on this device");
+  },
+
+  startFreeTrial: () => {
+    setDemoTrialActive(true);
+    setHasSeenRegistrationPrompt(true);
+    const { practiceSummary, user } = get();
+    if (practiceSummary && !user) {
+      set({ route: ROUTES.RESULT });
+      return;
+    }
+    set({ route: user ? getPostAuthRoute() : getGuestEntryRoute() });
+  },
+
+  finishPracticeNavigation: () => {
+    const { user, practiceSummary } = get();
+    if (!user && !hasSeenRegistrationPrompt() && !hasCompletedFirstPractice()) {
+      setHasCompletedFirstPractice(true);
+      set({ route: ROUTES.REGISTRATION_PROMPT });
+      return;
+    }
+    set({ route: ROUTES.RESULT });
+    if (!user && practiceSummary && !isDemoTrialActive()) {
+      setDemoTrialActive(true);
+    }
+  },
+
+  resolvePostAuthRoute: () => {
+    if (get().practiceSummary) {
+      setHasSeenRegistrationPrompt(true);
+      return ROUTES.RESULT;
+    }
+    return getPostAuthRoute();
   },
 
   login: async (credentials) => {
@@ -123,7 +192,7 @@ export const useNotaStore = create((set, get) => ({
       practiceSessions: sessions,
       selectedInstrument: inst,
       teacherMode: user.teacherMode,
-      route: getPostAuthRoute(),
+      route: get().resolvePostAuthRoute(),
     });
     return user;
   },
@@ -131,7 +200,11 @@ export const useNotaStore = create((set, get) => ({
   register: async (payload) => {
     const { user } = await authRegister(payload);
     const inst = instruments.find((i) => i.name === user.instrument) || instruments[0];
-    set({ user, selectedInstrument: inst, route: ROUTES.INSTRUMENT });
+    set({
+      user,
+      selectedInstrument: inst,
+      route: get().resolvePostAuthRoute(),
+    });
     return user;
   },
 
@@ -144,7 +217,7 @@ export const useNotaStore = create((set, get) => ({
     await authLogout();
     set({
       user: null,
-      route: ROUTES.AUTH_LOGIN,
+      route: getGuestEntryRoute(),
       practiceSummary: null,
       aiFeedback: null,
     });
@@ -278,7 +351,11 @@ export const useNotaStore = create((set, get) => ({
 
     const sessions = state.user
       ? await loadPracticeSessions(state.user.id)
-      : [sessionRecord, ...state.practiceSessions].slice(0, 200);
+      : (() => {
+          const next = [sessionRecord, ...state.practiceSessions].slice(0, 200);
+          setLocalSessions(next);
+          return next;
+        })();
 
     set({
       practiceSessions: sessions,
