@@ -240,50 +240,51 @@ button {
   font-size: 14px;
 }
 
-.carousel {
+.instrument-pills {
   display: flex;
-  gap: 10px;
-  margin-top: 18px;
+  gap: 8px;
+  margin-top: 20px;
+  margin-bottom: 14px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 4px;
+  padding: 2px 2px 6px;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-.carousel::-webkit-scrollbar {
+.instrument-pills::-webkit-scrollbar {
   display: none;
 }
 
-.mini-card {
-  min-width: 78px;
-  height: 92px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+.instrument-pill {
   flex-shrink: 0;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d8d8d8;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
 }
 
-.mini-card.active {
+.instrument-pill.active {
   border-color: #ff7a00;
-  box-shadow: 0 0 24px rgba(255, 122, 0, 0.2);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(255, 122, 0, 0.28);
 }
 
-.instrument-image.mini {
-  width: 42px;
-  height: 42px;
-  margin: 8px auto 6px;
-  background: transparent;
+.instrument-select-screen .hero p {
+  margin-bottom: 18px;
 }
 
-.mini-card span {
-  font-size: 12px;
-}
-
-.counter {
-  text-align: right;
-  color: #ff7a00;
-  margin: 10px 8px 14px;
+.instrument-select-screen .instrument-select-actions {
+  margin-top: 0;
+  gap: 12px;
 }
 
 .buttons {

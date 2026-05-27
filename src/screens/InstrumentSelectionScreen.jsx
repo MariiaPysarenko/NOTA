@@ -104,7 +104,7 @@ export default function InstrumentSelectionScreen() {
   }
 
   return (
-    <main className="screen">
+    <main className="screen instrument-select-screen">
       <section className="hero">
         <h1>
           Choose Your <br />
@@ -124,27 +124,22 @@ export default function InstrumentSelectionScreen() {
         </div>
       </section>
 
-      <div className="carousel">
+      <div className="instrument-pills" role="tablist" aria-label="Choose instrument">
         {instruments.map((item) => (
           <button
             key={item.id}
             type="button"
-            className={`mini-card ${selectedInstrument.id === item.id ? "active" : ""}`}
+            role="tab"
+            aria-selected={selectedInstrument.id === item.id}
+            className={`instrument-pill ${selectedInstrument.id === item.id ? "active" : ""}`}
             onClick={() => selectInstrument(item)}
           >
-            <div className="instrument-image mini">
-              <img src={item.image} alt={item.name} />
-            </div>
-            <span>{item.name.split(" ")[0]}</span>
+            {item.name.split(" ")[0]}
           </button>
         ))}
       </div>
 
-      <div className="counter">
-        {selectedInstrument.id} / {instruments.length}
-      </div>
-
-      <div className="buttons">
+      <div className="buttons instrument-select-actions">
         <button
           type="button"
           className="primary"
