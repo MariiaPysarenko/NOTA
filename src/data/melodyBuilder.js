@@ -16,3 +16,20 @@ export function buildMelody(entries) {
     return note;
   });
 }
+
+/**
+ * Build from explicit 4/4 bars (each bar = array of [pitch, duration]).
+ * Ensures measure numbers align with musical bar lines for sheet layout.
+ */
+export function buildMelodyFromBars(bars) {
+  const notes = [];
+  bars.forEach((bar, barIndex) => {
+    const measure = barIndex + 1;
+    let beat = 1;
+    for (const [pitch, duration] of bar) {
+      notes.push(createNote({ pitch, duration, measure, beat }));
+      beat += BEATS[duration] ?? 1;
+    }
+  });
+  return notes;
+}

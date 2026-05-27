@@ -34,7 +34,7 @@ export default function PracticeSheetPanel({
           difficultMeasures={difficultMeasures}
           progress={progress}
           width={330}
-          height={140}
+          measuresPerLine={2}
         />
         <AnnotationLayer annotations={annotations} />
       </div>

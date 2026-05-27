@@ -34,7 +34,7 @@ export default function PracticeSheetHero({
           difficultMeasures={difficultMeasures}
           progress={progress}
           width={350}
-          height={200}
+          measuresPerLine={2}
           className="sheet-hero-renderer"
         />
         <AnnotationLayer annotations={annotations} />

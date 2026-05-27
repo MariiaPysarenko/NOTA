@@ -1728,6 +1728,30 @@ button {
   min-height: 120px;
 }
 
+.vexflow-wrap.sheet-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.vexflow-wrap.sheet-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.review-screen .review-sheet-card .vexflow-wrap {
+  min-height: 280px;
+  max-height: min(58vh, 480px);
+}
+
+.review-screen .review-sheet-card {
+  padding-bottom: 10px;
+}
+
+.vexflow-container {
+  position: relative;
+}
+
 .vexflow-container svg {
   display: block;
   margin: 0 auto;
@@ -3645,13 +3669,19 @@ button {
 
 .practice-v2-sheet-inner {
   position: relative;
-  min-height: 200px;
+  min-height: 220px;
+  max-height: min(42vh, 360px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   overflow: hidden;
   border-radius: var(--radius-md);
   background: rgba(0, 0, 0, 0.35);
+}
+
+.practice-v2-sheet-inner .vexflow-wrap.sheet-scroll {
+  width: 100%;
+  max-height: min(42vh, 360px);
 }
 
 .sheet-hero-renderer svg {

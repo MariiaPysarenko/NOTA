@@ -80,13 +80,14 @@ export default function ReviewEditScreen() {
         <p>{pieceMeta.title} — edit pitch, duration, or add markings before practice.</p>
       </section>
 
-      <section className="digital-sheet-card">
+      <section className="digital-sheet-card review-sheet-card">
         <p className="exercise-label">Digital sheet music</p>
         <SheetMusicRenderer
           notes={editing}
           activeNoteId={selectedId}
+          scrollToNoteId={selectedId}
           width={330}
-          height={150}
+          measuresPerLine={4}
         />
       </section>
 
