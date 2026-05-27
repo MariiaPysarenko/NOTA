@@ -20,11 +20,11 @@ const DURATION_VF = {
 
 const BEATS = { whole: 4, half: 2, quarter: 1, eighth: 0.5, sixteenth: 0.25 };
 
-const STAVE_TOP = 30;
-const STAVE_BLOCK_HEIGHT = 146;
-const SYSTEM_GAP = 56;
+const STAVE_TOP = 24;
+const STAVE_BLOCK_HEIGHT = 136;
+const SYSTEM_GAP = 42;
 const STAVE_LEFT = 8;
-const MIN_MEASURE_WIDTH = 108;
+const MIN_MEASURE_WIDTH = 104;
 const STAVE_LINE_SPACING = 13;
 
 function pitchToVexKey(pitch) {
@@ -94,11 +94,21 @@ function createTickable(note, { difficultSet, activeNoteId }) {
 function measureComplexityWeight(measureNotes = [], isFirst = false) {
   if (!measureNotes.length) return 1 + (isFirst ? 0.35 : 0);
   const beats = measureNotes.reduce((sum, n) => sum + (BEATS[n.duration] ?? 1), 0);
+  const accidentalPenalty = measureNotes.reduce((sum, n) => {
+    const m = n.pitch?.match(/^([A-G])([#b]?)(\d)$/);
+    return sum + (m?.[2] ? 0.22 : 0);
+  }, 0);
   const densePenalty = measureNotes.reduce((sum, n) => {
     const d = BEATS[n.duration] ?? 1;
     return sum + (d <= 0.5 ? 0.45 : d <= 1 ? 0.2 : 0);
   }, 0);
-  return beats * 0.58 + measureNotes.length * 0.44 + densePenalty + (isFirst ? 0.55 : 0);
+  return (
+    beats * 0.58 +
+    measureNotes.length * 0.42 +
+    densePenalty +
+    accidentalPenalty +
+    (isFirst ? 0.5 : 0)
+  );
 }
 
 function drawMeasure(ctx, measureNotes, x, y, measureWidth, options) {
@@ -130,7 +140,7 @@ function drawMeasure(ctx, measureNotes, x, y, measureWidth, options) {
   voice.setMode(Voice.Mode.SOFT);
   voice.addTickables(tickables);
 
-  const formatter = new Formatter({ softmaxFactor: 28, maxIterations: 18 });
+  const formatter = new Formatter({ softmaxFactor: 24, maxIterations: 18 });
   formatter.joinVoices([voice]).formatToStave([voice], stave, { stave, context: ctx });
   voice.setContext(ctx).setStave(stave).drawWithStyle();
 
