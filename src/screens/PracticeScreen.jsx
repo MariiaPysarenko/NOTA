@@ -117,6 +117,7 @@ export default function PracticeScreen() {
         activeNoteId={activeNoteId}
         difficultMeasures={session.difficultMeasures}
         progress={progressRatio}
+        autoScroll={session.phase === "practicing"}
         onChooseTrack={() => navigate(ROUTES.TRACK_CHOICE)}
       />
 

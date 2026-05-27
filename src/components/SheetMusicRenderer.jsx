@@ -136,10 +136,12 @@ export default function SheetMusicRenderer({
   height: heightProp,
   measuresPerLine: measuresPerLineProp,
   scrollToNoteId = null,
+  autoScroll = false,
   className = "",
 }) {
   const containerRef = useRef(null);
   const wrapRef = useRef(null);
+  const lastScrolledIdRef = useRef(null);
   const difficultSet = new Set(difficultMeasures);
 
   useEffect(() => {
@@ -181,9 +183,19 @@ export default function SheetMusicRenderer({
         x += w;
       });
 
+      const activeInSystem = lineMeasures
+        .flat()
+        .some((n) => n.id === activeNoteId);
+      const systemNoteIds = lineMeasures
+        .flat()
+        .map((n) => n.id)
+        .join(",");
+
       const systemRow = document.createElement("div");
       systemRow.className = "sheet-system-marker";
       systemRow.dataset.systemStart = String(firstMeasure);
+      if (systemNoteIds) systemRow.dataset.noteIds = systemNoteIds;
+      if (activeInSystem) systemRow.dataset.active = "true";
       systemRow.style.position = "absolute";
       systemRow.style.top = `${y}px`;
       systemRow.style.left = "0";
@@ -202,18 +214,61 @@ export default function SheetMusicRenderer({
   ]);
 
   useEffect(() => {
-    if (!scrollToNoteId || !wrapRef.current) return;
-    const note = notes.find((n) => n.id === scrollToNoteId);
+    const targetId = autoScroll ? activeNoteId : scrollToNoteId;
+    if (!targetId || !wrapRef.current) return;
+
+    const note = notes.find((n) => n.id === targetId);
     if (!note) return;
 
-    const measuresPerLine = resolveMeasuresPerLine(width, measuresPerLineProp);
-    const systemStart =
-      Math.floor((note.measure - 1) / measuresPerLine) * measuresPerLine + 1;
-    const marker = wrapRef.current.querySelector(
-      `[data-system-start="${systemStart}"]`
-    );
-    marker?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [scrollToNoteId, notes, width, measuresPerLineProp]);
+    if (autoScroll && lastScrolledIdRef.current === targetId) return;
+
+    const frameId = requestAnimationFrame(() => {
+      const scrollContainer = wrapRef.current;
+      if (!scrollContainer) return;
+
+      const measuresPerLine = resolveMeasuresPerLine(width, measuresPerLineProp);
+      const systemStart =
+        Math.floor((note.measure - 1) / measuresPerLine) * measuresPerLine + 1;
+      const marker =
+        scrollContainer.querySelector(`[data-system-start="${systemStart}"]`) ||
+        scrollContainer.querySelector(`[data-note-ids*="${targetId}"]`);
+
+      if (!marker) return;
+
+      if (autoScroll) {
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const markerRect = marker.getBoundingClientRect();
+        const margin = 56;
+        const fullyVisible =
+          markerRect.top >= containerRect.top + margin &&
+          markerRect.bottom <= containerRect.bottom - margin;
+        if (fullyVisible) {
+          lastScrolledIdRef.current = targetId;
+          return;
+        }
+      }
+
+      marker.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+      lastScrolledIdRef.current = targetId;
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [
+    scrollToNoteId,
+    activeNoteId,
+    autoScroll,
+    notes,
+    width,
+    measuresPerLineProp,
+  ]);
+
+  useEffect(() => {
+    if (!autoScroll) lastScrolledIdRef.current = null;
+  }, [autoScroll]);
 
   const showPlayhead = progress > 0 && !activeNoteId;
   const playheadLeft = `${12 + progress * (width - 40)}px`;

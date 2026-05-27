@@ -8,6 +8,7 @@ export default function PracticeSheetHero({
   activeNoteId,
   difficultMeasures,
   progress,
+  autoScroll = false,
   onChooseTrack,
 }) {
   if (!notes.length) {
@@ -35,6 +36,7 @@ export default function PracticeSheetHero({
           progress={progress}
           width={350}
           measuresPerLine={2}
+          autoScroll={autoScroll}
           className="sheet-hero-renderer"
         />
         <AnnotationLayer annotations={annotations} />
