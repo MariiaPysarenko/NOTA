@@ -3952,7 +3952,7 @@ button {
 }
 
 .review-subtitle {
-  margin: 0 0 var(--space-md);
+  margin: 0 0 var(--space-sm);
   font-size: var(--text-body);
   color: #ccc;
 }
@@ -3961,7 +3961,7 @@ button {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-sm);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
 
 .review-reward-row span {
@@ -3977,6 +3977,7 @@ button {
 
 .review-streak-bar {
   text-align: left;
+  margin-top: 2px;
 }
 
 .review-coach-lines {

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNotaStore } from "../store/useNotaStore";
 import { ROUTES } from "../navigation/routes";
 import {
@@ -34,7 +35,6 @@ export default function ResultAnalysisScreen() {
   const selectedInstrument = useNotaStore((s) => s.selectedInstrument);
   const streak = useNotaStore((s) => s.streak);
   const gamification = useNotaStore((s) => s.gamification);
-  const newAchievements = useNotaStore((s) => s.newAchievements);
   const clearNewAchievements = useNotaStore((s) => s.clearNewAchievements);
   const navigate = useNotaStore((s) => s.navigate);
   const showToast = useNotaStore((s) => s.showToast);
@@ -63,6 +63,10 @@ export default function ResultAnalysisScreen() {
   const durationMin = Math.max(1, Math.round(durationSec / 60));
   const { level, progress } = levelFromXp(gamification.totalXp || 0);
   const dailyMinutes = minutesPracticedToday(practiceSessions);
+
+  useEffect(() => {
+    clearNewAchievements();
+  }, [clearNewAchievements]);
 
   const correctNotes = (s.noteResults || [])
     .filter((r) => r.hits > 0 && !r.wrong?.length)
@@ -148,19 +152,6 @@ export default function ResultAnalysisScreen() {
             Daily goal {dailyMinutes}/{DAILY_GOAL_MINUTES}m · Level {level} ({progress}% to next)
           </p>
         </div>
-
-        {newAchievements?.length > 0 && (
-          <div className="achievement-unlock streak-pulse">
-            {newAchievements.map((a) => (
-              <p key={a.id}>
-                {a.icon} Unlocked: {a.title}
-              </p>
-            ))}
-            <button type="button" className="secondary small-btn" onClick={clearNewAchievements}>
-              Dismiss
-            </button>
-          </div>
-        )}
       </section>
 
       {aiFeedback && (
