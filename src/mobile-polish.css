@@ -256,6 +256,16 @@
     padding: 20px 16px;
   }
 
+  .phone-auth .auth-screen {
+    justify-content: flex-start;
+    padding-top: var(--space-lg);
+    padding-bottom: calc(var(--space-xl) + var(--safe-bottom));
+  }
+
+  .auth-form-card {
+    padding: var(--space-md);
+  }
+
   .phone.has-bottom-nav .bottom-nav-shell {
     position: sticky;
     bottom: 0;

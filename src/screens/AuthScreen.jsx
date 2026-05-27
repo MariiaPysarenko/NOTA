@@ -36,62 +36,83 @@ export default function AuthScreen({ mode = "login" }) {
 
   return (
     <main className="screen auth-screen">
-      <section className="hero small">
-        <h1>
-          {isLogin ? "Welcome to" : "Join"} <span>NOTA</span>
-        </h1>
-        <p>
-          AI-powered music practice for focused daily progress.
-          {isDemoMode ? " Running in demo mode — any email works." : ""}
-        </p>
-      </section>
+      <div className="auth-screen-inner" key={mode}>
+        <header className="auth-hero">
+          <p className="auth-brand">
+            NOT<span>A</span>
+          </p>
+          <h1 className="auth-title">{isLogin ? "Welcome back" : "Join the practice"}</h1>
+          <p className="auth-tagline">
+            AI-powered music practice for focused daily progress.
+          </p>
+          {isDemoMode && (
+            <span className="auth-demo-pill">Demo mode — any email works</span>
+          )}
+        </header>
 
-      <form className="auth-form glass-card" onSubmit={handleSubmit}>
-        {!isLogin && (
-          <label>
-            Display name
+        <div className="auth-mode-tabs" role="tablist" aria-label="Authentication mode">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={isLogin}
+            className={`auth-mode-tab ${isLogin ? "active" : ""}`}
+            onClick={() => navigate(ROUTES.AUTH_LOGIN)}
+          >
+            Login
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!isLogin}
+            className={`auth-mode-tab ${!isLogin ? "active" : ""}`}
+            onClick={() => navigate(ROUTES.AUTH_REGISTER)}
+          >
+            Register
+          </button>
+        </div>
+
+        <form className="auth-form auth-form-card" onSubmit={handleSubmit}>
+          {!isLogin && (
+            <label className="auth-field">
+              <span className="auth-field-label">Display name</span>
+              <input
+                type="text"
+                className="auth-input"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your name"
+                autoComplete="name"
+              />
+            </label>
+          )}
+          <label className="auth-field">
+            <span className="auth-field-label">Email</span>
             <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name"
-              autoComplete="name"
+              type="email"
+              className="auth-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
+              required
             />
           </label>
-        )}
-        <label>
-          Email
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            autoComplete="email"
-            required
-          />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={isDemoMode ? "Any password in demo mode" : "At least 6 characters"}
-            autoComplete={isLogin ? "current-password" : "new-password"}
-          />
-        </label>
-        <button type="submit" className="primary" disabled={loading}>
-          {loading ? "Please wait…" : isLogin ? "Login" : "Create account"}
-        </button>
-      </form>
-
-      <button
-        type="button"
-        className="link-btn"
-        onClick={() => navigate(isLogin ? ROUTES.AUTH_REGISTER : ROUTES.AUTH_LOGIN)}
-      >
-        {isLogin ? "New here? Register" : "Already have an account? Login"}
-      </button>
+          <label className="auth-field">
+            <span className="auth-field-label">Password</span>
+            <input
+              type="password"
+              className="auth-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={isDemoMode ? "Any password in demo" : "At least 6 characters"}
+              autoComplete={isLogin ? "current-password" : "new-password"}
+            />
+          </label>
+          <button type="submit" className="primary auth-submit" disabled={loading}>
+            {loading ? "Please wait…" : isLogin ? "Sign in" : "Create account"}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
