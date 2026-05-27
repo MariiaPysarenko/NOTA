@@ -8,6 +8,8 @@ const INSTRUMENT_OFFSETS = {
   Trumpet: -2,
   Flute: 0,
   Violin: 0,
+  "Acoustic Guitar": 0,
+  "Electric Guitar": 0,
   Piano: 0,
   Drums: 0,
 };

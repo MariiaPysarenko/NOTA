@@ -8,4 +8,6 @@ export const instruments = [
   { id: 5, name: "Trombone", type: "Brass", image: instrumentImage("trombone") },
   { id: 6, name: "Violin", type: "Strings", image: instrumentImage("violin") },
   { id: 7, name: "Drums", type: "Percussion", image: instrumentImage("drums") },
+  { id: 8, name: "Acoustic Guitar", type: "Strings", image: instrumentImage("guitar") },
+  { id: 9, name: "Electric Guitar", type: "Strings", image: instrumentImage("electric-guitar") },
 ];
