@@ -1740,8 +1740,12 @@ button {
 }
 
 .review-screen .review-sheet-card .vexflow-wrap {
-  min-height: 280px;
-  max-height: min(58vh, 480px);
+  min-height: 320px;
+  max-height: min(62vh, 520px);
+}
+
+.vexflow-wrap.has-active-note .vexflow-container svg {
+  filter: drop-shadow(0 0 6px rgba(255, 122, 0, 0.15));
 }
 
 .review-screen .review-sheet-card {
@@ -3669,8 +3673,8 @@ button {
 
 .practice-v2-sheet-inner {
   position: relative;
-  min-height: 220px;
-  max-height: min(42vh, 360px);
+  min-height: 260px;
+  max-height: min(48vh, 400px);
   display: flex;
   align-items: flex-start;
   justify-content: center;

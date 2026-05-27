@@ -1,5 +1,13 @@
 import { useEffect, useRef } from "react";
-import { Formatter, Renderer, Stave, StaveNote, Voice } from "vexflow";
+import {
+  BarlineType,
+  Beam,
+  Formatter,
+  Renderer,
+  Stave,
+  StaveNote,
+  Voice,
+} from "vexflow";
 
 const DURATION_VF = {
   whole: "w",
@@ -11,9 +19,12 @@ const DURATION_VF = {
 
 const BEATS = { whole: 4, half: 2, quarter: 1, eighth: 0.5, sixteenth: 0.25 };
 
-const STAVE_HEIGHT = 96;
-const STAVE_TOP = 18;
-const STAVE_LEFT = 8;
+const STAVE_TOP = 22;
+const STAVE_BLOCK_HEIGHT = 118;
+const SYSTEM_GAP = 38;
+const STAVE_LEFT = 6;
+const MIN_MEASURE_WIDTH = 80;
+const STAVE_LINE_SPACING = 11;
 
 function pitchToVexKey(pitch) {
   const m = pitch.match(/^([A-G][#b]?)(\d)$/);
@@ -44,6 +55,12 @@ function chunkMeasures(measureGroups, perLine) {
   return lines;
 }
 
+function resolveMeasuresPerLine(width, requested) {
+  const maxFit = Math.floor((width - STAVE_LEFT * 2) / MIN_MEASURE_WIDTH);
+  const cap = requested ?? (width < 360 ? 2 : 4);
+  return Math.max(2, Math.min(cap, Math.max(2, maxFit)));
+}
+
 function createTickable(note, { difficultSet, activeNoteId }) {
   const isDifficult = difficultSet.has(note.measure);
   const isActive = note.id === activeNoteId;
@@ -53,11 +70,61 @@ function createTickable(note, { difficultSet, activeNoteId }) {
     duration: DURATION_VF[note.duration] || "q",
   });
   if (isActive) {
-    sn.setStyle({ fillStyle: "#ff7a00", strokeStyle: "#ff9700" });
+    sn.setStyle({
+      fillStyle: "#ff7a00",
+      strokeStyle: "#ffcc66",
+      lineWidth: 2.2,
+    });
   } else if (isDifficult) {
     sn.setStyle({ fillStyle: "#ff3f24", strokeStyle: "#ff6b55" });
   }
   return sn;
+}
+
+function drawMeasure(ctx, measureNotes, x, y, measureWidth, options) {
+  const { difficultSet, activeNoteId, showClef, showTime } = options;
+  if (measureNotes.length === 0) return measureWidth;
+
+  const stave = new Stave(x, y, measureWidth, {
+    spacingBetweenLinesPx: STAVE_LINE_SPACING,
+    spaceAboveStaffLn: 4,
+    spaceBelowStaffLn: 4,
+  });
+
+  if (showClef) stave.addClef("treble");
+  if (showTime) stave.addTimeSignature("4/4");
+  stave.setEndBarType(BarlineType.SINGLE);
+  stave.setContext(ctx).draw();
+
+  const tickables = measureNotes.map((n) =>
+    createTickable(n, { difficultSet, activeNoteId })
+  );
+
+  const measureBeats = measureNotes.reduce(
+    (sum, n) => sum + (BEATS[n.duration] ?? 1),
+    0
+  );
+  const numBeats = Math.max(4, Math.ceil(measureBeats));
+
+  const voice = new Voice({ num_beats: numBeats, beat_value: 4 });
+  voice.setMode(Voice.Mode.SOFT);
+  voice.addTickables(tickables);
+
+  const formatter = new Formatter({ softmaxFactor: 8, maxIterations: 12 });
+  formatter.joinVoices([voice]).formatToStave([voice], stave, { stave, context: ctx });
+  voice.setContext(ctx).setStave(stave).drawWithStyle();
+
+  try {
+    const beams = Beam.generateBeams(voice.getTickables(), {
+      beamRests: true,
+      maintainStemDirections: true,
+    });
+    beams.forEach((beam) => beam.setContext(ctx).drawWithStyle());
+  } catch {
+    /* beaming optional */
+  }
+
+  return measureWidth;
 }
 
 export default function SheetMusicRenderer({
@@ -82,13 +149,13 @@ export default function SheetMusicRenderer({
 
     if (notes.length === 0) return;
 
-    const measuresPerLine =
-      measuresPerLineProp ?? (width < 360 ? 2 : 4);
+    const measuresPerLine = resolveMeasuresPerLine(width, measuresPerLineProp);
     const measureGroups = groupNotesByMeasure(notes);
     const systems = chunkMeasures(measureGroups, measuresPerLine);
-    const staveWidth = width - STAVE_LEFT * 2;
+    const systemStep = STAVE_BLOCK_HEIGHT + SYSTEM_GAP;
     const totalHeight =
-      heightProp ?? STAVE_TOP + systems.length * STAVE_HEIGHT + 24;
+      heightProp ?? STAVE_TOP + systems.length * systemStep + 28;
+    const contentWidth = width - STAVE_LEFT * 2;
 
     const renderer = new Renderer(el, Renderer.Backends.SVG);
     renderer.resize(width, totalHeight);
@@ -97,49 +164,22 @@ export default function SheetMusicRenderer({
     ctx.setStrokeStyle("#e8e8e8");
 
     systems.forEach((lineMeasures, lineIndex) => {
-      const y = STAVE_TOP + lineIndex * STAVE_HEIGHT;
+      const y = STAVE_TOP + lineIndex * systemStep;
       const firstMeasure = lineMeasures[0]?.[0]?.measure ?? lineIndex * measuresPerLine + 1;
+      const measureCount = lineMeasures.length;
+      const measureWidth = contentWidth / measureCount;
 
-      const stave = new Stave(STAVE_LEFT, y, staveWidth);
-      if (lineIndex === 0) {
-        stave.addClef("treble").addTimeSignature("4/4");
-      }
-      stave.setContext(ctx).draw();
-
-      const lineNotes = lineMeasures.flat();
-      if (lineNotes.length === 0) return;
-
-      const tickables = lineNotes.map((n) =>
-        createTickable(n, { difficultSet, activeNoteId })
-      );
-
-      const lineBeats = lineNotes.reduce(
-        (sum, n) => sum + (BEATS[n.duration] ?? 1),
-        0
-      );
-      const numBeats = Math.max(4, Math.ceil(lineBeats));
-
-      const voice = new Voice({ num_beats: numBeats, beat_value: 4 });
-      voice.setStrict(false);
-      voice.addTickables(tickables);
-
-      const formatWidth = staveWidth - (lineIndex === 0 ? 72 : 16);
-
-      try {
-        new Formatter().joinVoices([voice]).format([voice], formatWidth);
-        voice.draw(ctx, stave);
-      } catch {
-        tickables.forEach((sn, idx) => {
-          sn.setStave(stave);
-          sn.setContext(ctx);
-          sn.setXShift(idx * 42);
-          try {
-            sn.draw();
-          } catch {
-            /* skip */
-          }
+      let x = STAVE_LEFT;
+      lineMeasures.forEach((measureNotes, mi) => {
+        const isFirst = lineIndex === 0 && mi === 0;
+        const w = drawMeasure(ctx, measureNotes, x, y, measureWidth, {
+          difficultSet,
+          activeNoteId,
+          showClef: isFirst,
+          showTime: isFirst,
         });
-      }
+        x += w;
+      });
 
       const systemRow = document.createElement("div");
       systemRow.className = "sheet-system-marker";
@@ -148,7 +188,7 @@ export default function SheetMusicRenderer({
       systemRow.style.top = `${y}px`;
       systemRow.style.left = "0";
       systemRow.style.width = "1px";
-      systemRow.style.height = `${STAVE_HEIGHT}px`;
+      systemRow.style.height = `${STAVE_BLOCK_HEIGHT}px`;
       systemRow.style.pointerEvents = "none";
       el.appendChild(systemRow);
     });
@@ -166,8 +206,7 @@ export default function SheetMusicRenderer({
     const note = notes.find((n) => n.id === scrollToNoteId);
     if (!note) return;
 
-    const measuresPerLine =
-      measuresPerLineProp ?? (width < 360 ? 2 : 4);
+    const measuresPerLine = resolveMeasuresPerLine(width, measuresPerLineProp);
     const systemStart =
       Math.floor((note.measure - 1) / measuresPerLine) * measuresPerLine + 1;
     const marker = wrapRef.current.querySelector(
@@ -190,7 +229,9 @@ export default function SheetMusicRenderer({
   return (
     <div
       ref={wrapRef}
-      className={`vexflow-wrap sheet-with-playhead sheet-scroll ${className}`}
+      className={`vexflow-wrap sheet-with-playhead sheet-scroll ${className} ${
+        activeNoteId ? "has-active-note" : ""
+      }`}
     >
       <div ref={containerRef} className="vexflow-container" aria-label="Digital sheet music" />
       {showPlayhead && (
